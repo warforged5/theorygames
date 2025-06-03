@@ -610,19 +610,55 @@ fun ScoreChip(
     )
 
     // Varied shapes based on rank for visual interest
+    val FlowerShape = RoundedCornerShape(
+        topStart = 24.dp,
+        topEnd = 4.dp,
+        bottomStart = 4.dp,
+        bottomEnd = 24.dp
+    )
+
+    val PuffyShape = RoundedCornerShape(
+        topStart = 20.dp,
+        topEnd = 20.dp,
+        bottomStart = 20.dp,
+        bottomEnd = 8.dp
+    )
+
+    val GemShape = RoundedCornerShape(
+        topStart = 8.dp,
+        topEnd = 24.dp,
+        bottomStart = 24.dp,
+        bottomEnd = 8.dp
+    )
+
+    val BurstShape = RoundedCornerShape(
+        topStart = 2.dp,
+        topEnd = 20.dp,
+        bottomStart = 20.dp,
+        bottomEnd = 2.dp
+    )
+
+    val CloverShape = RoundedCornerShape(
+        topStart = 16.dp,
+        topEnd = 16.dp,
+        bottomStart = 16.dp,
+        bottomEnd = 4.dp
+    )
+
+    // Varied shapes based on rank for visual interest
     val chipShape = when (rank) {
-        1 -> RoundedPolygon(MaterialShapes.Heart)
-        2 -> RoundedPolygon(MaterialShapes.Gem)
-        3 -> RoundedPolygon(MaterialShapes.Diamond)
-        4 -> RoundedPolygon(MaterialShapes.Flower)
-        5 -> RoundedPolygon(MaterialShapes.Clover4Leaf)
-        6 -> RoundedPolygon(MaterialShapes.Burst)
-        else -> RoundedPolygon(MaterialShapes.Puffy)
+        1 -> ExpressiveShapes.HeartShape
+        2 -> GemShape
+        3 -> ExpressiveShapes.DiamondShape
+        4 -> FlowerShape
+        5 -> CloverShape
+        6 -> BurstShape
+        else -> PuffyShape
     }
 
     Surface(
         modifier = Modifier.scale(scale),
-        shape = chipShape.toShape(),
+        shape = chipShape,
         color = chipColor,
         shadowElevation = if (isLeader) 8.dp else 2.dp
     ) {
@@ -631,10 +667,31 @@ fun ScoreChip(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Rank Indicator with expressive shapes
+            val SunnyShape = RoundedCornerShape(
+                topStart = 4.dp,
+                topEnd = 16.dp,
+                bottomStart = 16.dp,
+                bottomEnd = 4.dp
+            )
+
+            val SemiCircleShape = RoundedCornerShape(
+                topStart = 20.dp,
+                topEnd = 20.dp,
+                bottomStart = 4.dp,
+                bottomEnd = 4.dp
+            )
+
+            val TriangleShape = RoundedCornerShape(
+                topStart = 4.dp,
+                topEnd = 4.dp,
+                bottomStart = 16.dp,
+                bottomEnd = 16.dp
+            )
+
             val rankShape = when (rank) {
-                1 -> RoundedPolygon(MaterialShapes.Sunny)
-                2 -> RoundedPolygon(MaterialShapes.SemiCircle)
-                3 -> RoundedPolygon(MaterialShapes.Triangle)
+                1 -> SunnyShape
+                2 -> SemiCircleShape
+                3 -> TriangleShape
                 else -> CircleShape
             }
 
