@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -584,7 +586,7 @@ fun PlayerResultCard(
 
 
 // Score Chip Component for Live Scoreboard
-@ExperimentalMaterial3ExpressiveApi
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ScoreChip(
     player: Player,
@@ -609,118 +611,127 @@ fun ScoreChip(
         label = "leaderScale"
     )
 
-    // Varied shapes based on rank for visual interest
-    val FlowerShape = RoundedCornerShape(
-        topStart = 24.dp,
-        topEnd = 4.dp,
-        bottomStart = 4.dp,
-        bottomEnd = 24.dp
-    )
-
-    val PuffyShape = RoundedCornerShape(
-        topStart = 20.dp,
-        topEnd = 20.dp,
-        bottomStart = 20.dp,
-        bottomEnd = 8.dp
-    )
-
-    val GemShape = RoundedCornerShape(
-        topStart = 8.dp,
-        topEnd = 24.dp,
-        bottomStart = 24.dp,
-        bottomEnd = 8.dp
-    )
-
-    val BurstShape = RoundedCornerShape(
-        topStart = 2.dp,
-        topEnd = 20.dp,
-        bottomStart = 20.dp,
-        bottomEnd = 2.dp
-    )
-
-    val CloverShape = RoundedCornerShape(
-        topStart = 16.dp,
-        topEnd = 16.dp,
-        bottomStart = 16.dp,
-        bottomEnd = 4.dp
-    )
-
-    // Varied shapes based on rank for visual interest
-    val chipShape = when (rank) {
-        1 -> ExpressiveShapes.HeartShape
-        2 -> GemShape
-        3 -> ExpressiveShapes.DiamondShape
-        4 -> FlowerShape
-        5 -> CloverShape
-        6 -> BurstShape
-        else -> PuffyShape
+    // Varied RoundedPolygon shapes based on rank for visual interest
+    val chipPolygon = when (rank) {
+        1 -> MaterialShapes.Heart
+        2 -> MaterialShapes.Gem
+        3 -> MaterialShapes.Diamond
+        4 -> MaterialShapes.Flower
+        5 -> MaterialShapes.Clover4Leaf
+        6 -> MaterialShapes.Burst
+        else -> MaterialShapes.Puffy
     }
+    val path = chipPolygon.toPath()
 
-    Surface(
-        modifier = Modifier.scale(scale),
-        shape = chipShape,
-        color = chipColor,
-        shadowElevation = if (isLeader) 8.dp else 2.dp
+    // Rank indicator polygons
+    val rankPolygon = when (rank) {
+        1 -> MaterialShapes.Sunny
+        2 -> MaterialShapes.SemiCircle
+        3 -> MaterialShapes.Triangle
+        else -> MaterialShapes.Circle
+    }
+    val rankPath = rankPolygon.toPath()
+
+    val outlineColor = MaterialTheme.colorScheme.outline
+
+    Box(
+        modifier = Modifier
+            .scale(scale)
+            .size(width = 120.dp, height = 48.dp)
     ) {
+        // Draw the chip background using Canvas
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+            path.transform(
+                Matrix().apply {
+                    // Scale and center the polygon to fit our desired size
+                    scale(size.width * 0.9f, size.height * 0.9f)
+                    translate(
+                        size.width * 0.05f,
+                        size.height * 0.05f
+                    )
+                }
+            )
+
+            drawPath(
+                path = path,
+                color = chipColor,
+                style = androidx.compose.ui.graphics.drawscope.Fill
+            )
+
+            // Add shadow effect
+            if (isLeader) {
+                drawPath(
+                    path = path,
+                    color = chipColor.copy(alpha = 0.3f),
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 4.dp.toPx())
+                )
+            }
+        }
+
+        // Content overlay
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Rank Indicator with expressive shapes
-            val SunnyShape = RoundedCornerShape(
-                topStart = 4.dp,
-                topEnd = 16.dp,
-                bottomStart = 16.dp,
-                bottomEnd = 4.dp
-            )
-
-            val SemiCircleShape = RoundedCornerShape(
-                topStart = 20.dp,
-                topEnd = 20.dp,
-                bottomStart = 4.dp,
-                bottomEnd = 4.dp
-            )
-
-            val TriangleShape = RoundedCornerShape(
-                topStart = 4.dp,
-                topEnd = 4.dp,
-                bottomStart = 16.dp,
-                bottomEnd = 16.dp
-            )
-
-            val rankShape = when (rank) {
-                1 -> SunnyShape
-                2 -> SemiCircleShape
-                3 -> TriangleShape
-                else -> CircleShape
-            }
-
-            Surface(
-                shape = rankShape as Shape,
-                color = when (rank) {
-                    1 -> Color(0xFFFFD700) // Gold
-                    2 -> Color(0xFFC0C0C0) // Silver
-                    3 -> Color(0xFFCD7F32) // Bronze
-                    else -> MaterialTheme.colorScheme.outline
-                },
+            // Rank Indicator with polygon shape
+            Box(
                 modifier = Modifier.size(28.dp)
             ) {
-                Text(
-                    when (rank) {
-                        1 -> "👑"
-                        2 -> "🥈"
-                        3 -> "🥉"
-                        else -> "$rank"
-                    },
-                    modifier = Modifier.wrapContentSize(Alignment.Center),
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold
-                )
+                Canvas(modifier = Modifier.fillMaxSize()) {
+
+                    rankPath.transform(
+                        Matrix().apply {
+                            scale(size.width * 0.8f, size.height * 0.8f)
+                            translate(
+                                size.width * 0.1f,
+                                size.height * 0.1f
+                            )
+                        }
+                    )
+
+                    val rankColor = when (rank) {
+                        1 -> Color(0xFFFFD700) // Gold
+                        2 -> Color(0xFFC0C0C0) // Silver
+                        3 -> Color(0xFFCD7F32) // Bronze
+                        else -> outlineColor
+                    }
+
+                    drawPath(
+                        path = rankPath,
+                        color = rankColor,
+                        style = androidx.compose.ui.graphics.drawscope.Fill
+                    )
+                }
+
+                // Rank text/emoji overlay
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        when (rank) {
+                            1 -> "👑"
+                            2 -> "🥈"
+                            3 -> "🥉"
+                            else -> "$rank"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     player.name,
                     style = MaterialTheme.typography.bodyMedium,
