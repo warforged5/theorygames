@@ -12,5 +12,6 @@ data class GameState(
     val gameMode: GameMode = GameMode.CLASSIC,
     val powerUpsEnabled: Boolean = false,
     val frozenPlayers: Set<String> = emptySet(),
-    val lastRoundWinner: String? = null
+    val lastRoundWinner: String? = null,
+    val timerEnabled: Boolean = true
 )

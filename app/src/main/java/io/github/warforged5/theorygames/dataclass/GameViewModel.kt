@@ -1,8 +1,11 @@
 package io.github.warforged5.theorygames.dataclass
 
+// Enhanced Game Logic with Fixed Timer and Better State Management
+
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -28,6 +31,12 @@ class GameViewModel : ViewModel() {
 
     private var _lastAchievements = mutableStateListOf<AchievementType>()
     val lastAchievements: List<AchievementType> = _lastAchievements
+
+    private var _isLoading = mutableStateOf(false)
+    val isLoading: State<Boolean> = _isLoading
+
+    // Timer management - single job to prevent multiple timers
+    private var timerJob: Job? = null
 
     fun addPlayer(playerName: String, avatar: PlayerAvatar = GameData.getRandomAvatar()) {
         val newPlayer = Player(
@@ -72,9 +81,14 @@ class GameViewModel : ViewModel() {
         )
     }
 
+    fun toggleTimer(enabled: Boolean) {
+        _gameState.value = _gameState.value.copy(timerEnabled = enabled)
+    }
+
     fun startGame() {
         if (_gameState.value.players.isEmpty()) return
 
+        _isLoading.value = true
         _gameResults.clear()
         _lastAchievements.clear()
         _showAnswerVisualization.value = false
@@ -96,10 +110,18 @@ class GameViewModel : ViewModel() {
                 )
             }
         )
-        nextQuestion()
+
+        viewModelScope.launch {
+            delay(500) // Loading animation
+            _isLoading.value = false
+            nextQuestion()
+        }
     }
 
     fun nextQuestion() {
+        // Cancel any existing timer
+        timerJob?.cancel()
+
         val difficulty = when (_gameState.value.currentRound) {
             in 1..3 -> QuestionDifficulty.EASY
             in 4..7 -> QuestionDifficulty.MEDIUM
@@ -116,7 +138,8 @@ class GameViewModel : ViewModel() {
             currentQuestion = question,
             playerAnswers = emptyList(),
             timeRemaining = timePerQuestion,
-            frozenPlayers = emptySet()
+            frozenPlayers = emptySet(),
+            isPaused = false
         )
         _questionStartTime = System.currentTimeMillis()
         _showAnswerVisualization.value = false
@@ -124,21 +147,39 @@ class GameViewModel : ViewModel() {
     }
 
     private fun startTimer() {
+        // Cancel any existing timer first
+        timerJob?.cancel()
+
+        // Don't start timer if disabled
+        if (!_gameState.value.timerEnabled) return
+
         val initialTime = _gameState.value.timeRemaining
-        viewModelScope.launch {
+        timerJob = viewModelScope.launch {
             for (i in initialTime downTo 0) {
-                if (_gameState.value.isPaused) {
-                    delay(100)
-                    continue
+                // Check if game is still active and not paused
+                if (!_gameState.value.isGameActive || _gameState.value.isPaused || !_gameState.value.timerEnabled) {
+                    break
                 }
 
                 _gameState.value = _gameState.value.copy(timeRemaining = i)
                 delay(1000)
+
                 if (i == 0) {
                     processRoundResults()
                     break
                 }
             }
+        }
+    }
+
+    fun pauseGame() {
+        _gameState.value = _gameState.value.copy(isPaused = true)
+    }
+
+    fun resumeGame() {
+        _gameState.value = _gameState.value.copy(isPaused = false)
+        if (_gameState.value.timeRemaining > 0) {
+            startTimer()
         }
     }
 
@@ -166,6 +207,8 @@ class GameViewModel : ViewModel() {
             _gameState.value.frozenPlayers.contains(it.id)
         }
         if (updatedAnswers.size == activePlayers.size) {
+            // Cancel timer since all players answered
+            timerJob?.cancel()
             processRoundResults()
         }
     }
@@ -189,7 +232,7 @@ class GameViewModel : ViewModel() {
         when (powerUpType) {
             PowerUpType.EXTRA_TIME -> {
                 _gameState.value = _gameState.value.copy(
-                    timeRemaining = _gameState.value.timeRemaining + 15,
+                    timeRemaining = (_gameState.value.timeRemaining + 15).coerceAtMost(60),
                     players = updatedPlayers
                 )
             }
@@ -214,6 +257,9 @@ class GameViewModel : ViewModel() {
     }
 
     private fun processRoundResults() {
+        // Cancel timer to ensure no multiple timers
+        timerJob?.cancel()
+
         val question = _gameState.value.currentQuestion ?: return
         val answers = _gameState.value.playerAnswers
 
@@ -247,7 +293,7 @@ class GameViewModel : ViewModel() {
 
         // Check if game is over or handle elimination
         viewModelScope.launch {
-            delay(5000) // Show results for 5 seconds
+            delay(4000) // Show results for 4 seconds
             _showAnswerVisualization.value = false
 
             if (_gameState.value.gameMode == GameMode.ELIMINATION && _gameState.value.currentRound > 2) {
@@ -401,6 +447,9 @@ class GameViewModel : ViewModel() {
     }
 
     private fun endGame() {
+        // Cancel any running timer
+        timerJob?.cancel()
+
         // Check for perfect game achievement
         val topPlayer = _gameState.value.players.maxByOrNull { it.score }
         topPlayer?.let { player ->
@@ -416,6 +465,9 @@ class GameViewModel : ViewModel() {
     }
 
     fun resetGame() {
+        // Cancel any running timer
+        timerJob?.cancel()
+
         _gameState.value = GameState(
             players = _gameState.value.players.map { it.copy(score = 0, currentStreak = 0) },
             gameMode = _selectedGameMode.value,
@@ -424,6 +476,7 @@ class GameViewModel : ViewModel() {
         _gameResults.clear()
         _lastAchievements.clear()
         _showAnswerVisualization.value = false
+        _isLoading.value = false
     }
 
     fun getTopPlayers(): List<Player> {
@@ -471,5 +524,11 @@ class GameViewModel : ViewModel() {
 
     fun clearLastAchievements() {
         _lastAchievements.clear()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // Cancel timer when ViewModel is cleared
+        timerJob?.cancel()
     }
 }

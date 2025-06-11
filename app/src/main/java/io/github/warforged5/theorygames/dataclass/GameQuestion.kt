@@ -8,6 +8,8 @@ data class GameQuestion(
     val category: GameCategory,
     val difficulty: QuestionDifficulty = QuestionDifficulty.MEDIUM,
     val hint: String = "",
-    val explanation: String = ""
+    val explanation: String = "",
+    val countryName: String = "",
+    val countryFlag: String = ""
 )
 
