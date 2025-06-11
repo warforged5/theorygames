@@ -5,5 +5,6 @@ enum class GameCategory(val displayName: String, val icon: String) {
     GDP("GDP per Capita", "💰"),
     ATOMIC_NUMBER("Atomic Numbers", "⚛️"),
     POPULATION("Population", "👥"),
-    AREA("Country Area", "🗺️")
+    AREA("Country Area", "🗺️"),
+    GPU("GPU Performance", "🎮")
 }

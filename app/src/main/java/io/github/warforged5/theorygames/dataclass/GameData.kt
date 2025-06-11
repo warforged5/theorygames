@@ -42,6 +42,30 @@ object GameData {
         GameQuestion("area_5", "What is Australia's area in million km²?", 7.7, "M km²", GameCategory.AREA, QuestionDifficulty.EASY, "Island continent", "About the size of the continental US")
     )
 
+    // GPU Performance Data
+    private val gpuPerformanceDatabase = listOf(
+        GPUPerformanceData("RTX 4090", 98.0, 112.0, 89.0, 285.0, 450, 1599),
+        GPUPerformanceData("RTX 4080", 82.0, 95.0, 74.0, 228.0, 320, 1199),
+        GPUPerformanceData("RTX 4070 Ti", 71.0, 81.0, 64.0, 195.0, 285, 799),
+        GPUPerformanceData("RTX 4070", 62.0, 71.0, 56.0, 168.0, 200, 599),
+        GPUPerformanceData("RTX 4060 Ti", 52.0, 59.0, 47.0, 142.0, 165, 399),
+        GPUPerformanceData("RTX 4060", 44.0, 51.0, 40.0, 125.0, 115, 299),
+        GPUPerformanceData("RX 7900 XTX", 91.0, 103.0, 82.0, 268.0, 355, 999),
+        GPUPerformanceData("RX 7900 XT", 79.0, 89.0, 71.0, 225.0, 315, 899),
+        GPUPerformanceData("RX 7800 XT", 68.0, 77.0, 61.0, 185.0, 263, 499),
+        GPUPerformanceData("RX 7700 XT", 58.0, 66.0, 52.0, 155.0, 245, 449),
+        GPUPerformanceData("RTX 3080", 64.0, 74.0, 58.0, 172.0, 320, 699),
+        GPUPerformanceData("RTX 3070", 54.0, 62.0, 49.0, 145.0, 220, 499)
+    )
+
+    private val gpuQuestions = listOf(
+        GameQuestion("gpu_1", "What FPS does this mystery GPU achieve in Cyberpunk 2077?", 98.0, "FPS", GameCategory.GPU, QuestionDifficulty.MEDIUM, "High-end consumer GPU", "Look at the performance pattern across games"),
+        GameQuestion("gpu_2", "What FPS does this mystery GPU achieve in Red Dead Redemption 2?", 112.0, "FPS", GameCategory.GPU, QuestionDifficulty.MEDIUM, "Top-tier performance GPU", "Compare relative performance to other GPUs"),
+        GameQuestion("gpu_3", "What FPS does this mystery GPU achieve in Cyberpunk 2077?", 82.0, "FPS", GameCategory.GPU, QuestionDifficulty.EASY, "High-performance gaming GPU", "Strong performance in demanding games"),
+        GameQuestion("gpu_4", "What FPS does this mystery GPU achieve in Fortnite (1080p)?", 285.0, "FPS", GameCategory.GPU, QuestionDifficulty.HARD, "Flagship gaming GPU", "Exceptional performance in competitive games"),
+        GameQuestion("gpu_5", "What FPS does this mystery GPU achieve in Red Dead Redemption 2?", 89.0, "FPS", GameCategory.GPU, QuestionDifficulty.MEDIUM, "AMD flagship GPU", "Strong performance across all games")
+    )
+
     fun getQuestionsForCategory(category: GameCategory): List<GameQuestion> {
         return when (category) {
             GameCategory.HDI -> hdiQuestions
@@ -49,6 +73,7 @@ object GameData {
             GameCategory.ATOMIC_NUMBER -> atomicQuestions
             GameCategory.POPULATION -> populationQuestions
             GameCategory.AREA -> areaQuestions
+            GameCategory.GPU -> gpuQuestions
         }
     }
 
@@ -60,6 +85,34 @@ object GameData {
         } else {
             questions.random()
         }
+    }
+
+    fun getGPUChartData(questionId: String): GPUChartData? {
+        val question = gpuQuestions.find { it.id == questionId } ?: return null
+
+        // Find the mystery GPU based on the correct answer
+        val mysteryGpu = when (questionId) {
+            "gpu_1", "gpu_2" -> gpuPerformanceDatabase.find { it.gpuName == "RTX 4090" }
+            "gpu_3" -> gpuPerformanceDatabase.find { it.gpuName == "RTX 4080" }
+            "gpu_4" -> gpuPerformanceDatabase.find { it.gpuName == "RTX 4090" }
+            "gpu_5" -> gpuPerformanceDatabase.find { it.gpuName == "RX 7900 XTX" }
+            else -> null
+        } ?: return null
+
+        // Select 3 comparison GPUs (different performance tiers)
+        val comparisonGpus = gpuPerformanceDatabase
+            .filter { it.gpuName != mysteryGpu.gpuName }
+            .shuffled()
+            .take(3)
+
+        return GPUChartData(
+            game1Name = "Cyberpunk 2077",
+            game2Name = "Red Dead Redemption 2",
+            mysteryGpu = mysteryGpu,
+            comparisonGpus = comparisonGpus,
+            game1MetricName = "FPS at 1440p Ultra",
+            game2MetricName = "FPS at 1440p Ultra"
+        )
     }
 
     fun getAllCategories(): List<GameCategory> {
