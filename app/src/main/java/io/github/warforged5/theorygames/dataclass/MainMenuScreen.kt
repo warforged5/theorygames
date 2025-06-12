@@ -837,7 +837,7 @@ fun GameplayScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     item {
-                        // Enhanced Timer Card
+                        // Enhanced Timer Card - now shows current player's turn with progress bar
                         TimerCard(
                             timeRemaining = gameState.timeRemaining,
                             totalTime = when (gameState.gameMode) {
@@ -847,6 +847,8 @@ fun GameplayScreen(
                             difficulty = question.difficulty,
                             isPaused = gameState.isPaused,
                             isTimerEnabled = gameState.timerEnabled,
+                            currentPlayer = gameViewModel.getCurrentPlayer(),
+                            isWaitingForNextPlayer = gameState.isWaitingForNextPlayer,
                             onResume = { gameViewModel.resumeGame() }
                         )
                     }
@@ -870,13 +872,17 @@ fun GameplayScreen(
                         }
                     }
 
-                    // Player answer cards
+                    // Player answer cards - turn-based system
                     if (!showAnswerVisualization) {
                         items(gameState.players) { player ->
                             EnhancedPlayerAnswerCard(
                                 player = player,
                                 hasAnswered = gameState.playerAnswers.any { it.playerId == player.id },
                                 isFrozen = gameState.frozenPlayers.contains(player.id),
+                                isCurrentPlayer = gameViewModel.isPlayersTurn(player.id),
+                                isWaitingForTurn = !gameViewModel.isPlayersTurn(player.id) &&
+                                        !gameState.playerAnswers.any { it.playerId == player.id } &&
+                                        !gameState.isWaitingForNextPlayer,
                                 onSubmitAnswer = { answer, powerUp ->
                                     gameViewModel.submitAnswer(player.id, answer, powerUp)
                                 },
@@ -1022,6 +1028,8 @@ fun TimerCard(
     difficulty: QuestionDifficulty,
     isPaused: Boolean,
     isTimerEnabled: Boolean,
+    currentPlayer: Player?,
+    isWaitingForNextPlayer: Boolean,
     onResume: () -> Unit
 ) {
     val progress = if (isTimerEnabled) timeRemaining.toFloat() / totalTime.toFloat() else 1f
@@ -1032,6 +1040,7 @@ fun TimerCard(
             containerColor = when {
                 !isTimerEnabled -> MaterialTheme.colorScheme.surfaceContainer
                 isPaused -> MaterialTheme.colorScheme.surfaceContainer
+                isWaitingForNextPlayer -> MaterialTheme.colorScheme.tertiaryContainer
                 isLowTime -> MaterialTheme.colorScheme.errorContainer
                 timeRemaining <= 10 -> MaterialTheme.colorScheme.tertiaryContainer
                 else -> MaterialTheme.colorScheme.primaryContainer
@@ -1050,42 +1059,72 @@ fun TimerCard(
                     Text(
                         when {
                             !isTimerEnabled -> "No Time Limit"
-                            isPaused -> "Paused"
-                            else -> "Time Remaining"
+                            isPaused -> "Game Paused"
+                            isWaitingForNextPlayer -> "Next Player..."
+                            else -> "${currentPlayer?.name}'s Turn"
                         },
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    if (isTimerEnabled) {
+                    if (isTimerEnabled && !isWaitingForNextPlayer) {
                         Text(
                             "${timeRemaining}s",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold
                         )
-                    } else {
+                    } else if (!isTimerEnabled) {
                         Text(
                             "∞",
                             style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold
                         )
+                    } else {
+                        Text(
+                            "Getting ready...",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
 
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = difficulty.color.copy(alpha = 0.2f)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        difficulty.displayName,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = difficulty.color,
-                        fontWeight = FontWeight.Bold
-                    )
+                    // Show current player avatar
+                    if (currentPlayer != null && !isWaitingForNextPlayer) {
+                        Surface(
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primary
+                        ) {
+                            Box(
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    currentPlayer.avatar.emoji,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                    }
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = difficulty.color.copy(alpha = 0.2f)
+                    ) {
+                        Text(
+                            difficulty.displayName,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = difficulty.color,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
 
-            if (isTimerEnabled) {
+            if (isTimerEnabled && !isWaitingForNextPlayer) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 LinearProgressIndicator(
@@ -1122,6 +1161,8 @@ fun EnhancedPlayerAnswerCard(
     player: Player,
     hasAnswered: Boolean,
     isFrozen: Boolean,
+    isCurrentPlayer: Boolean,
+    isWaitingForTurn: Boolean,
     onSubmitAnswer: (Double, PowerUpType?) -> Unit,
     gameViewModel: GameViewModel
 ) {
@@ -1136,9 +1177,13 @@ fun EnhancedPlayerAnswerCard(
             containerColor = when {
                 isFrozen -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
                 hasAnswered -> MaterialTheme.colorScheme.primaryContainer
+                isCurrentPlayer -> MaterialTheme.colorScheme.secondaryContainer
                 else -> MaterialTheme.colorScheme.surface
             }
-        )
+        ),
+        border = if (isCurrentPlayer && !hasAnswered) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else null
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -1155,7 +1200,10 @@ fun EnhancedPlayerAnswerCard(
                     Surface(
                         modifier = Modifier.size(40.dp),
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primaryContainer
+                        color = when {
+                            isCurrentPlayer && !hasAnswered -> MaterialTheme.colorScheme.primary
+                            else -> MaterialTheme.colorScheme.primaryContainer
+                        }
                     ) {
                         Box(
                             contentAlignment = Alignment.Center
@@ -1168,11 +1216,30 @@ fun EnhancedPlayerAnswerCard(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(
-                            player.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                player.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            if (isCurrentPlayer && !hasAnswered) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = MaterialTheme.colorScheme.primary
+                                ) {
+                                    Text(
+                                        "YOUR TURN",
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -1200,19 +1267,23 @@ fun EnhancedPlayerAnswerCard(
                 }
 
                 // Power-ups button
-                if (player.powerUps.isNotEmpty() && !hasAnswered && !isFrozen) {
-                    Badge(
-                        containerColor = MaterialTheme.colorScheme.primary
+                if (player.powerUps.isNotEmpty() && !hasAnswered && isCurrentPlayer) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("${player.powerUps.size}")
-                    }
-                    IconButton(
-                        onClick = { showPowerUps = !showPowerUps }
-                    ) {
-                        Icon(
-                            if (showPowerUps) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                            contentDescription = "Power-ups"
-                        )
+                        Badge(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ) {
+                            Text("${player.powerUps.size}")
+                        }
+                        IconButton(
+                            onClick = { showPowerUps = !showPowerUps }
+                        ) {
+                            Icon(
+                                if (showPowerUps) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = "Power-ups"
+                            )
+                        }
                     }
                 }
             }
@@ -1267,8 +1338,33 @@ fun EnhancedPlayerAnswerCard(
                         )
                     }
                 }
-            } else {
-                // Answer input section
+            } else if (isWaitingForTurn) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainer
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.AccessTime,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Waiting for your turn...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else if (isCurrentPlayer) {
+                // Answer input section for current player
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Power-ups selection
@@ -1457,7 +1553,7 @@ fun AnswerVisualizationCard(visualizations: List<AnswerVisualization>) {
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-            HorizontalDivider()
+            Divider()
             Spacer(modifier = Modifier.height(12.dp))
 
             Surface(

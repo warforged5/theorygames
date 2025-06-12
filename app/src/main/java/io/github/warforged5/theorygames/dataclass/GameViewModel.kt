@@ -1,6 +1,6 @@
 package io.github.warforged5.theorygames.dataclass
 
-// Enhanced Game Logic with Fixed Timer and Better State Management
+// Enhanced Game Logic with Sequential Turn-Based Timer System
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
@@ -35,7 +35,7 @@ class GameViewModel : ViewModel() {
     private var _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
-    // Timer management - single job to prevent multiple timers
+    // Single timer job for current player's turn
     private var timerJob: Job? = null
 
     fun addPlayer(playerName: String, avatar: PlayerAvatar = GameData.getRandomAvatar()) {
@@ -93,15 +93,10 @@ class GameViewModel : ViewModel() {
         _lastAchievements.clear()
         _showAnswerVisualization.value = false
 
-        val timePerQuestion = when (_selectedGameMode.value) {
-            GameMode.SPEED -> 15
-            else -> 30
-        }
-
         _gameState.value = _gameState.value.copy(
             isGameActive = true,
             currentRound = 1,
-            timeRemaining = timePerQuestion,
+            currentPlayerTurnIndex = 0,
             players = _gameState.value.players.map {
                 it.copy(
                     score = 0,
@@ -137,25 +132,36 @@ class GameViewModel : ViewModel() {
         _gameState.value = _gameState.value.copy(
             currentQuestion = question,
             playerAnswers = emptyList(),
+            currentPlayerTurnIndex = 0, // Start with first player
             timeRemaining = timePerQuestion,
             frozenPlayers = emptySet(),
-            isPaused = false
+            isPaused = false,
+            isWaitingForNextPlayer = false
         )
         _questionStartTime = System.currentTimeMillis()
         _showAnswerVisualization.value = false
-        startTimer()
+
+        startCurrentPlayerTurn()
     }
 
-    private fun startTimer() {
-        // Cancel any existing timer first
-        timerJob?.cancel()
-
-        // Don't start timer if disabled
+    private fun startCurrentPlayerTurn() {
         if (!_gameState.value.timerEnabled) return
 
-        val initialTime = _gameState.value.timeRemaining
+        // Cancel existing timer
+        timerJob?.cancel()
+
+        val timePerTurn = when (_selectedGameMode.value) {
+            GameMode.SPEED -> 15
+            else -> 30
+        }
+
+        _gameState.value = _gameState.value.copy(
+            timeRemaining = timePerTurn,
+            isWaitingForNextPlayer = false
+        )
+
         timerJob = viewModelScope.launch {
-            for (i in initialTime downTo 0) {
+            for (i in timePerTurn downTo 0) {
                 // Check if game is still active and not paused
                 if (!_gameState.value.isGameActive || _gameState.value.isPaused || !_gameState.value.timerEnabled) {
                     break
@@ -165,7 +171,8 @@ class GameViewModel : ViewModel() {
                 delay(1000)
 
                 if (i == 0) {
-                    processRoundResults()
+                    // Current player's time is up, move to next player
+                    moveToNextPlayer()
                     break
                 }
             }
@@ -174,17 +181,27 @@ class GameViewModel : ViewModel() {
 
     fun pauseGame() {
         _gameState.value = _gameState.value.copy(isPaused = true)
+        timerJob?.cancel()
     }
 
     fun resumeGame() {
         _gameState.value = _gameState.value.copy(isPaused = false)
         if (_gameState.value.timeRemaining > 0) {
-            startTimer()
+            startCurrentPlayerTurn()
         }
     }
 
     fun submitAnswer(playerId: String, answer: Double, powerUpUsed: PowerUpType? = null) {
+        // Only allow current player to submit
+        val currentPlayerIndex = _gameState.value.currentPlayerTurnIndex
+        val currentPlayer = _gameState.value.players.getOrNull(currentPlayerIndex)
+
+        if (currentPlayer?.id != playerId) return
         if (_gameState.value.frozenPlayers.contains(playerId)) return
+
+        // Check if player has already answered this round
+        val existingAnswer = _gameState.value.playerAnswers.find { it.playerId == playerId }
+        if (existingAnswer != null) return
 
         val timeTaken = (System.currentTimeMillis() - _questionStartTime) / 1000.0
         val playerAnswer = PlayerAnswer(playerId, answer, timeTaken = timeTaken, powerUpUsed = powerUpUsed)
@@ -202,15 +219,44 @@ class GameViewModel : ViewModel() {
             unlockAchievement(playerId, AchievementType.SPEED_DEMON)
         }
 
-        // If all active players have answered, process results immediately
-        val activePlayers = _gameState.value.players.filterNot {
-            _gameState.value.frozenPlayers.contains(it.id)
-        }
-        if (updatedAnswers.size == activePlayers.size) {
-            // Cancel timer since all players answered
-            timerJob?.cancel()
+        // Stop current timer and move to next player
+        timerJob?.cancel()
+        moveToNextPlayer()
+    }
+
+    private fun moveToNextPlayer() {
+        val nextPlayerIndex = _gameState.value.currentPlayerTurnIndex + 1
+
+        if (nextPlayerIndex < _gameState.value.players.size) {
+            // Move to next player
+            _gameState.value = _gameState.value.copy(
+                currentPlayerTurnIndex = nextPlayerIndex,
+                isWaitingForNextPlayer = true
+            )
+
+            // Brief pause before starting next player's turn
+            viewModelScope.launch {
+                delay(1500)
+                startCurrentPlayerTurn()
+            }
+        } else {
+            // All players have had their turn, process results
             processRoundResults()
         }
+    }
+
+    fun getCurrentPlayer(): Player? {
+        val currentIndex = _gameState.value.currentPlayerTurnIndex
+        return _gameState.value.players.getOrNull(currentIndex)
+    }
+
+    fun isPlayersTurn(playerId: String): Boolean {
+        val currentPlayer = getCurrentPlayer()
+        return currentPlayer?.id == playerId && !_gameState.value.isWaitingForNextPlayer
+    }
+
+    fun hasPlayerAnswered(playerId: String): Boolean {
+        return _gameState.value.playerAnswers.any { it.playerId == playerId }
     }
 
     fun usePowerUp(playerId: String, powerUpType: PowerUpType) {
@@ -231,12 +277,14 @@ class GameViewModel : ViewModel() {
         // Apply power-up effects
         when (powerUpType) {
             PowerUpType.EXTRA_TIME -> {
+                val newTime = (_gameState.value.timeRemaining + 15).coerceAtMost(60)
                 _gameState.value = _gameState.value.copy(
-                    timeRemaining = (_gameState.value.timeRemaining + 15).coerceAtMost(60),
+                    timeRemaining = newTime,
                     players = updatedPlayers
                 )
             }
             PowerUpType.FREEZE -> {
+                // In turn-based mode, freeze doesn't make as much sense, but we can skip other players' turns
                 val otherPlayerIds = _gameState.value.players
                     .filter { it.id != playerId }
                     .map { it.id }
@@ -245,6 +293,7 @@ class GameViewModel : ViewModel() {
                     frozenPlayers = otherPlayerIds,
                     players = updatedPlayers
                 )
+
                 viewModelScope.launch {
                     delay(5000)
                     _gameState.value = _gameState.value.copy(frozenPlayers = emptySet())

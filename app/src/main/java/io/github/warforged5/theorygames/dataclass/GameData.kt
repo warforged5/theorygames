@@ -3,19 +3,19 @@ package io.github.warforged5.theorygames.dataclass
 object GameData {
 
     private val hdiQuestions = listOf(
-        GameQuestion("hdi_1", "What is Norway's Human Development Index (2023)?", 0.961, "", GameCategory.HDI, QuestionDifficulty.EASY, "One of the highest in the world", "Norway consistently ranks #1-3 globally"),
-        GameQuestion("hdi_2", "What is Switzerland's Human Development Index (2023)?", 0.962, "", GameCategory.HDI, QuestionDifficulty.EASY, "Alpine nation with high living standards", "Switzerland has excellent healthcare and education"),
-        GameQuestion("hdi_3", "What is Chad's Human Development Index (2023)?", 0.394, "", GameCategory.HDI, QuestionDifficulty.HARD, "Central African nation", "One of the lowest HDI scores globally"),
-        GameQuestion("hdi_4", "What is Germany's Human Development Index (2023)?", 0.942, "", GameCategory.HDI, QuestionDifficulty.MEDIUM, "Major European economy", "Strong in all HDI components"),
-        GameQuestion("hdi_5", "What is Niger's Human Development Index (2023)?", 0.400, "", GameCategory.HDI, QuestionDifficulty.HARD, "Landlocked West African nation", "Faces significant development challenges")
+        GameQuestion("hdi_1", "What is Norway's Human Development Index (2023)?", 0.961, "", GameCategory.HDI, QuestionDifficulty.EASY, "One of the highest in the world", "Norway consistently ranks #1-3 globally", "Norway", "🇳🇴"),
+        GameQuestion("hdi_2", "What is Switzerland's Human Development Index (2023)?", 0.962, "", GameCategory.HDI, QuestionDifficulty.EASY, "Alpine nation with high living standards", "Switzerland has excellent healthcare and education", "Switzerland", "🇨🇭"),
+        GameQuestion("hdi_3", "What is Chad's Human Development Index (2023)?", 0.394, "", GameCategory.HDI, QuestionDifficulty.HARD, "Central African nation", "One of the lowest HDI scores globally", "Chad", "🇹🇩"),
+        GameQuestion("hdi_4", "What is Germany's Human Development Index (2023)?", 0.942, "", GameCategory.HDI, QuestionDifficulty.MEDIUM, "Major European economy", "Strong in all HDI components", "Germany", "🇩🇪"),
+        GameQuestion("hdi_5", "What is Niger's Human Development Index (2023)?", 0.400, "", GameCategory.HDI, QuestionDifficulty.HARD, "Landlocked West African nation", "Faces significant development challenges", "Niger", "🇳🇪")
     )
 
     private val gdpQuestions = listOf(
-        GameQuestion("gdp_1", "What is Luxembourg's GDP per capita (2023)?", 125112.0, "$", GameCategory.GDP, QuestionDifficulty.HARD, "Small European financial hub", "Highest GDP per capita globally"),
-        GameQuestion("gdp_2", "What is India's GDP per capita (2023)?", 2612.0, "$", GameCategory.GDP, QuestionDifficulty.MEDIUM, "Large emerging economy", "Over 1.4 billion people"),
-        GameQuestion("gdp_3", "What is Ireland's GDP per capita (2023)?", 99013.0, "$", GameCategory.GDP, QuestionDifficulty.MEDIUM, "European tech hub", "Benefits from multinational corporations"),
-        GameQuestion("gdp_4", "What is the USA's GDP per capita (2023)?", 76398.0, "$", GameCategory.GDP, QuestionDifficulty.EASY, "World's largest economy", "Around 330 million people"),
-        GameQuestion("gdp_5", "What is Nigeria's GDP per capita (2023)?", 2184.0, "$", GameCategory.GDP, QuestionDifficulty.MEDIUM, "Africa's most populous nation", "Over 200 million people")
+        GameQuestion("gdp_1", "What is Luxembourg's GDP per capita (2023)?", 125112.0, "$", GameCategory.GDP, QuestionDifficulty.HARD, "Small European financial hub", "Highest GDP per capita globally", "Luxembourg", "🇱🇺"),
+        GameQuestion("gdp_2", "What is India's GDP per capita (2023)?", 2612.0, "$", GameCategory.GDP, QuestionDifficulty.MEDIUM, "Large emerging economy", "Over 1.4 billion people", "India", "🇮🇳"),
+        GameQuestion("gdp_3", "What is Ireland's GDP per capita (2023)?", 99013.0, "$", GameCategory.GDP, QuestionDifficulty.MEDIUM, "European tech hub", "Benefits from multinational corporations", "Ireland", "🇮🇪"),
+        GameQuestion("gdp_4", "What is the USA's GDP per capita (2023)?", 76398.0, "$", GameCategory.GDP, QuestionDifficulty.EASY, "World's largest economy", "Around 330 million people", "United States", "🇺🇸"),
+        GameQuestion("gdp_5", "What is Nigeria's GDP per capita (2023)?", 2184.0, "$", GameCategory.GDP, QuestionDifficulty.MEDIUM, "Africa's most populous nation", "Over 200 million people", "Nigeria", "🇳🇬")
     )
 
     private val atomicQuestions = listOf(
@@ -27,19 +27,19 @@ object GameData {
     )
 
     private val populationQuestions = listOf(
-        GameQuestion("pop_1", "What is the population of Tokyo metropolitan area (millions)?", 37.4, "M", GameCategory.POPULATION, QuestionDifficulty.MEDIUM, "World's largest urban area", "Includes surrounding prefectures"),
-        GameQuestion("pop_2", "What is the population of Vatican City?", 825.0, "", GameCategory.POPULATION, QuestionDifficulty.HARD, "World's smallest country", "Mostly clergy and Swiss Guard"),
-        GameQuestion("pop_3", "What is the population of Shanghai (millions)?", 28.5, "M", GameCategory.POPULATION, QuestionDifficulty.MEDIUM, "China's largest city", "Major financial center"),
-        GameQuestion("pop_4", "What is the population of Iceland (thousands)?", 382.0, "K", GameCategory.POPULATION, QuestionDifficulty.EASY, "Nordic island nation", "Land of fire and ice"),
-        GameQuestion("pop_5", "What is the population of Monaco (thousands)?", 39.0, "K", GameCategory.POPULATION, QuestionDifficulty.HARD, "Tiny Mediterranean principality", "Most densely populated country")
+        GameQuestion("pop_1", "What is the population of Tokyo metropolitan area (millions)?", 37.4, "M", GameCategory.POPULATION, QuestionDifficulty.MEDIUM, "World's largest urban area", "Includes surrounding prefectures", "Japan", "🇯🇵"),
+        GameQuestion("pop_2", "What is the population of Vatican City?", 825.0, "", GameCategory.POPULATION, QuestionDifficulty.HARD, "World's smallest country", "Mostly clergy and Swiss Guard", "Vatican City", "🇻🇦"),
+        GameQuestion("pop_3", "What is the population of Shanghai (millions)?", 28.5, "M", GameCategory.POPULATION, QuestionDifficulty.MEDIUM, "China's largest city", "Major financial center", "China", "🇨🇳"),
+        GameQuestion("pop_4", "What is the population of Iceland (thousands)?", 382.0, "K", GameCategory.POPULATION, QuestionDifficulty.EASY, "Nordic island nation", "Land of fire and ice", "Iceland", "🇮🇸"),
+        GameQuestion("pop_5", "What is the population of Monaco (thousands)?", 39.0, "K", GameCategory.POPULATION, QuestionDifficulty.HARD, "Tiny Mediterranean principality", "Most densely populated country", "Monaco", "🇲🇨")
     )
 
     private val areaQuestions = listOf(
-        GameQuestion("area_1", "What is Russia's area in million km²?", 17.1, "M km²", GameCategory.AREA, QuestionDifficulty.EASY, "World's largest country", "Spans 11 time zones"),
-        GameQuestion("area_2", "What is Vatican City's area in km²?", 0.17, "km²", GameCategory.AREA, QuestionDifficulty.HARD, "World's smallest country", "Smaller than many city blocks"),
-        GameQuestion("area_3", "What is China's area in million km²?", 9.6, "M km²", GameCategory.AREA, QuestionDifficulty.MEDIUM, "Third or fourth largest country", "Depends on territorial disputes"),
-        GameQuestion("area_4", "What is Monaco's area in km²?", 2.02, "km²", GameCategory.AREA, QuestionDifficulty.MEDIUM, "Second smallest country", "About the size of Central Park"),
-        GameQuestion("area_5", "What is Australia's area in million km²?", 7.7, "M km²", GameCategory.AREA, QuestionDifficulty.EASY, "Island continent", "About the size of the continental US")
+        GameQuestion("area_1", "What is Russia's area in million km²?", 17.1, "M km²", GameCategory.AREA, QuestionDifficulty.EASY, "World's largest country", "Spans 11 time zones", "Russia", "🇷🇺"),
+        GameQuestion("area_2", "What is Vatican City's area in km²?", 0.17, "km²", GameCategory.AREA, QuestionDifficulty.HARD, "World's smallest country", "Smaller than many city blocks", "Vatican City", "🇻🇦"),
+        GameQuestion("area_3", "What is China's area in million km²?", 9.6, "M km²", GameCategory.AREA, QuestionDifficulty.MEDIUM, "Third or fourth largest country", "Depends on territorial disputes", "China", "🇨🇳"),
+        GameQuestion("area_4", "What is Monaco's area in km²?", 2.02, "km²", GameCategory.AREA, QuestionDifficulty.MEDIUM, "Second smallest country", "About the size of Central Park", "Monaco", "🇲🇨"),
+        GameQuestion("area_5", "What is Australia's area in million km²?", 7.7, "M km²", GameCategory.AREA, QuestionDifficulty.EASY, "Island continent", "About the size of the continental US", "Australia", "🇦🇺")
     )
 
     // GPU Performance Data

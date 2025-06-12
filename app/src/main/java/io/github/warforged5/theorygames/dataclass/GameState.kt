@@ -4,6 +4,7 @@ data class GameState(
     val currentQuestion: GameQuestion? = null,
     val players: List<Player> = emptyList(),
     val playerAnswers: List<PlayerAnswer> = emptyList(),
+    val currentPlayerTurnIndex: Int = 0,
     val isGameActive: Boolean = false,
     val isPaused: Boolean = false,
     val currentRound: Int = 1,
@@ -13,5 +14,6 @@ data class GameState(
     val powerUpsEnabled: Boolean = false,
     val frozenPlayers: Set<String> = emptySet(),
     val lastRoundWinner: String? = null,
-    val timerEnabled: Boolean = true
+    val timerEnabled: Boolean = true,
+    val isWaitingForNextPlayer: Boolean = false
 )
