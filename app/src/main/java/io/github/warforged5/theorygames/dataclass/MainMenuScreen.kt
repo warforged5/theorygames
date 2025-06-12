@@ -1181,9 +1181,6 @@ fun EnhancedPlayerAnswerCard(
                 else -> MaterialTheme.colorScheme.surface
             }
         ),
-        border = if (isCurrentPlayer && !hasAnswered) {
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-        } else null
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
