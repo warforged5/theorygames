@@ -27,65 +27,67 @@ fun GPUPerformanceChart(
     Column(
         modifier = modifier
     ) {
-        // Game 1 Chart
+        // Title
         Text(
-            text = "${chartData.game1Name} Performance",
-            style = MaterialTheme.typography.titleMedium,
+            text = "GPU Performance Comparison",
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        PerformanceBarChart(
-            mysteryValue = chartData.mysteryGpu.cyberpunk2077Fps,
-            comparisonData = chartData.comparisonGpus.map {
-                it.gpuName to it.cyberpunk2077Fps
-            },
-            metricName = chartData.game1MetricName,
-            modifier = Modifier.padding(bottom = 20.dp)
-        )
+        // Charts for each game
+        chartData.games.forEachIndexed { index, gameName ->
+            Text(
+                text = gameName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
 
-        // Game 2 Chart
-        Text(
-            text = "${chartData.game2Name} Performance",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+            MultiGPUPerformanceBarChart(
+                gameName = gameName,
+                mysteryGpu = chartData.mysteryGpu,
+                comparisonGpus = chartData.comparisonGpus,
+                unit = chartData.unit,
+                modifier = Modifier.padding(bottom = if (index < chartData.games.size - 1) 20.dp else 0.dp)
+            )
+        }
 
-        PerformanceBarChart(
-            mysteryValue = chartData.mysteryGpu.redDeadRedemption2Fps,
-            comparisonData = chartData.comparisonGpus.map {
-                it.gpuName to it.redDeadRedemption2Fps
-            },
-            metricName = chartData.game2MetricName
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Mystery GPU indicator
         Surface(
             shape = RoundedCornerShape(8.dp),
             color = MaterialTheme.colorScheme.primaryContainer
         ) {
-            Text(
-                text = "❓ Mystery GPU - What performance does it achieve?",
-                modifier = Modifier
-                    .padding(12.dp)
-                    .fillMaxWidth(),
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                textAlign = TextAlign.Center
-            )
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "❓ Mystery GPU",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "What GPU is this? Enter the GPU name (e.g., 'RTX 4070' or '4070')",
+                    modifier = Modifier.padding(top = 4.dp),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
 
 @Composable
-fun PerformanceBarChart(
-    mysteryValue: Double,
-    comparisonData: List<Pair<String, Double>>,
-    metricName: String,
+fun MultiGPUPerformanceBarChart(
+    gameName: String,
+    mysteryGpu: GPUPerformanceData,
+    comparisonGpus: List<GPUPerformanceData>,
+    unit: String,
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
@@ -97,8 +99,12 @@ fun PerformanceBarChart(
         label = "barAnimation"
     )
 
-    // All values including mystery (for scaling)
-    val allValues = comparisonData.map { it.second } + mysteryValue
+    // Get performance values for this game
+    val mysteryValue = mysteryGpu.getPerformance(gameName)
+    val comparisonValues = comparisonGpus.map { it.shortName to it.getPerformance(gameName) }
+
+    // All values for scaling
+    val allValues = comparisonValues.map { it.second } + mysteryValue
     val maxValue = allValues.maxOrNull() ?: 100.0
     val minValue = 0.0 // Start from 0 for FPS charts
     val valueRange = maxValue - minValue
@@ -113,12 +119,12 @@ fun PerformanceBarChart(
             Canvas(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp)
+                    .height(180.dp)
             ) {
                 val chartWidth = size.width
                 val chartHeight = size.height - 80.dp.toPx() // Leave space for labels
 
-                val totalBars = comparisonData.size + 1 // +1 for mystery GPU
+                val totalBars = comparisonValues.size + 1 // +1 for mystery GPU
                 val barWidth = chartWidth / totalBars * 0.6f
                 val barSpacing = chartWidth / totalBars
 
@@ -144,7 +150,7 @@ fun PerformanceBarChart(
                         android.graphics.Paint().apply {
                             color = android.graphics.Color.parseColor("#FF6B35")
                             textAlign = android.graphics.Paint.Align.CENTER
-                            textSize = with(density) { 24.sp.toPx() }
+                            textSize = with(density) { 20.sp.toPx() }
                         }
                     )
                 }
@@ -165,14 +171,21 @@ fun PerformanceBarChart(
                 }
 
                 // Draw comparison GPU bars
-                comparisonData.forEachIndexed { index, (gpuName, value) ->
+                comparisonValues.forEachIndexed { index, (gpuName, value) ->
                     val barHeight = ((value - minValue) / valueRange * chartHeight * animatedProgress).toFloat()
                     val x = (index + 1.5f) * barSpacing - barWidth / 2 // Offset for mystery GPU
                     val y = chartHeight - barHeight
 
+                    // Bar color based on brand
+                    val barColor = when {
+                        gpuName.contains("RTX") -> Color(0xFF76B900) // NVIDIA Green
+                        gpuName.contains("RX") -> Color(0xFFED1C24)  // AMD Red
+                        else -> Color(0xFF2196F3) // Default Blue
+                    }
+
                     // Bar
                     drawRect(
-                        color = Color(0xFF2196F3),
+                        color = barColor,
                         topLeft = Offset(x, y),
                         size = Size(barWidth, barHeight)
                     )
@@ -186,7 +199,7 @@ fun PerformanceBarChart(
                             android.graphics.Paint().apply {
                                 color = android.graphics.Color.BLACK
                                 textAlign = android.graphics.Paint.Align.CENTER
-                                textSize = with(density) { 12.sp.toPx() }
+                                textSize = with(density) { 11.sp.toPx() }
                                 isFakeBoldText = true
                             }
                         )
@@ -194,19 +207,14 @@ fun PerformanceBarChart(
 
                     // GPU name at bottom
                     drawContext.canvas.nativeCanvas.apply {
-                        // Truncate long GPU names
-                        val displayName = if (gpuName.length > 10) {
-                            gpuName.take(8) + "..."
-                        } else gpuName
-
                         drawText(
-                            displayName,
+                            gpuName,
                             x + barWidth / 2,
                             chartHeight + 20.dp.toPx(),
                             android.graphics.Paint().apply {
                                 color = android.graphics.Color.BLACK
                                 textAlign = android.graphics.Paint.Align.CENTER
-                                textSize = with(density) { 10.sp.toPx() }
+                                textSize = with(density) { 9.sp.toPx() }
                             }
                         )
                     }
@@ -225,7 +233,7 @@ fun PerformanceBarChart(
                     color = MaterialTheme.colorScheme.surfaceContainer
                 ) {
                     Text(
-                        text = metricName,
+                        text = "$unit (1440p Ultra Settings)",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

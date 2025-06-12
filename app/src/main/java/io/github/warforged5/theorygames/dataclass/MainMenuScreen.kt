@@ -886,6 +886,9 @@ fun GameplayScreen(
                                 onSubmitAnswer = { answer, powerUp ->
                                     gameViewModel.submitAnswer(player.id, answer, powerUp)
                                 },
+                                onSubmitTextAnswer = { textAnswer, powerUp ->
+                                    gameViewModel.submitTextAnswer(player.id, textAnswer, powerUp)
+                                },
                                 gameViewModel = gameViewModel
                             )
                         }
@@ -1164,6 +1167,7 @@ fun EnhancedPlayerAnswerCard(
     isCurrentPlayer: Boolean,
     isWaitingForTurn: Boolean,
     onSubmitAnswer: (Double, PowerUpType?) -> Unit,
+    onSubmitTextAnswer: (String, PowerUpType?) -> Unit,
     gameViewModel: GameViewModel
 ) {
     var answer by remember(hasAnswered) { mutableStateOf("") }
@@ -1171,6 +1175,8 @@ fun EnhancedPlayerAnswerCard(
     var selectedPowerUp by remember { mutableStateOf<PowerUpType?>(null) }
 
     val focusManager = LocalFocusManager.current
+    val currentQuestion = gameViewModel.gameState.value.currentQuestion
+    val isGPUQuestion = currentQuestion?.category == GameCategory.GPU
 
     ElevatedCard(
         colors = CardDefaults.elevatedCardColors(
@@ -1384,17 +1390,28 @@ fun EnhancedPlayerAnswerCard(
                     OutlinedTextField(
                         value = answer,
                         onValueChange = { answer = it },
-                        label = { Text("Your Answer") },
+                        label = {
+                            Text(
+                                if (isGPUQuestion) "GPU Name (e.g., 'RTX 4070' or '4070')"
+                                else "Your Answer"
+                            )
+                        },
                         modifier = Modifier.weight(1f),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Decimal,
+                            keyboardType = if (isGPUQuestion) KeyboardType.Text else KeyboardType.Decimal,
                             imeAction = ImeAction.Done
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
-                                answer.toDoubleOrNull()?.let { answerValue ->
-                                    onSubmitAnswer(answerValue, selectedPowerUp)
+                                if (answer.isNotBlank()) {
+                                    if (isGPUQuestion) {
+                                        onSubmitTextAnswer(answer.trim(), selectedPowerUp)
+                                    } else {
+                                        answer.toDoubleOrNull()?.let { answerValue ->
+                                            onSubmitAnswer(answerValue, selectedPowerUp)
+                                        }
+                                    }
                                     answer = ""
                                     selectedPowerUp = null
                                     showPowerUps = false
@@ -1403,12 +1420,14 @@ fun EnhancedPlayerAnswerCard(
                             }
                         ),
                         suffix = {
-                            gameViewModel.gameState.value.currentQuestion?.unit?.let { unit ->
-                                if (unit.isNotEmpty()) {
-                                    Text(
-                                        unit,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                            if (!isGPUQuestion) {
+                                currentQuestion?.unit?.let { unit ->
+                                    if (unit.isNotEmpty()) {
+                                        Text(
+                                            unit,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -1418,14 +1437,20 @@ fun EnhancedPlayerAnswerCard(
 
                     FilledIconButton(
                         onClick = {
-                            answer.toDoubleOrNull()?.let { answerValue ->
-                                onSubmitAnswer(answerValue, selectedPowerUp)
+                            if (answer.isNotBlank()) {
+                                if (isGPUQuestion) {
+                                    onSubmitTextAnswer(answer.trim(), selectedPowerUp)
+                                } else {
+                                    answer.toDoubleOrNull()?.let { answerValue ->
+                                        onSubmitAnswer(answerValue, selectedPowerUp)
+                                    }
+                                }
                                 answer = ""
                                 selectedPowerUp = null
                                 showPowerUps = false
                             }
                         },
-                        enabled = answer.toDoubleOrNull() != null
+                        enabled = if (isGPUQuestion) answer.isNotBlank() else answer.toDoubleOrNull() != null
                     ) {
                         Icon(Icons.Default.Send, contentDescription = "Submit")
                     }

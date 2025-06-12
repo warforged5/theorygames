@@ -42,28 +42,180 @@ object GameData {
         GameQuestion("area_5", "What is Australia's area in million km²?", 7.7, "M km²", GameCategory.AREA, QuestionDifficulty.EASY, "Island continent", "About the size of the continental US", "Australia", "🇦🇺")
     )
 
-    // GPU Performance Data
+    // GPU Performance Database - Flexible system supporting multiple games
+    private val gamesList = listOf(
+        "Cyberpunk 2077",
+        "Red Dead Redemption 2",
+        "Assassin's Creed Valhalla",
+        "Call of Duty: MW3",
+        "Fortnite"
+    )
+
     private val gpuPerformanceDatabase = listOf(
-        GPUPerformanceData("RTX 4090", 98.0, 112.0, 89.0, 285.0, 450, 1599),
-        GPUPerformanceData("RTX 4080", 82.0, 95.0, 74.0, 228.0, 320, 1199),
-        GPUPerformanceData("RTX 4070 Ti", 71.0, 81.0, 64.0, 195.0, 285, 799),
-        GPUPerformanceData("RTX 4070", 62.0, 71.0, 56.0, 168.0, 200, 599),
-        GPUPerformanceData("RTX 4060 Ti", 52.0, 59.0, 47.0, 142.0, 165, 399),
-        GPUPerformanceData("RTX 4060", 44.0, 51.0, 40.0, 125.0, 115, 299),
-        GPUPerformanceData("RX 7900 XTX", 91.0, 103.0, 82.0, 268.0, 355, 999),
-        GPUPerformanceData("RX 7900 XT", 79.0, 89.0, 71.0, 225.0, 315, 899),
-        GPUPerformanceData("RX 7800 XT", 68.0, 77.0, 61.0, 185.0, 263, 499),
-        GPUPerformanceData("RX 7700 XT", 58.0, 66.0, 52.0, 155.0, 245, 449),
-        GPUPerformanceData("RTX 3080", 64.0, 74.0, 58.0, 172.0, 320, 699),
-        GPUPerformanceData("RTX 3070", 54.0, 62.0, 49.0, 145.0, 220, 499)
+        GPUPerformanceData(
+            fullName = "RTX 4090",
+            shortName = "4090",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 98.0,
+                "Red Dead Redemption 2" to 112.0,
+                "Assassin's Creed Valhalla" to 89.0,
+                "Call of Duty: MW3" to 195.0,
+                "Fortnite" to 285.0
+            ),
+            powerConsumption = 450,
+            msrp = 1599
+        ),
+        GPUPerformanceData(
+            fullName = "RTX 4080",
+            shortName = "4080",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 82.0,
+                "Red Dead Redemption 2" to 95.0,
+                "Assassin's Creed Valhalla" to 74.0,
+                "Call of Duty: MW3" to 165.0,
+                "Fortnite" to 228.0
+            ),
+            powerConsumption = 320,
+            msrp = 1199
+        ),
+        GPUPerformanceData(
+            fullName = "RTX 4070 Ti",
+            shortName = "4070 Ti",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 71.0,
+                "Red Dead Redemption 2" to 81.0,
+                "Assassin's Creed Valhalla" to 64.0,
+                "Call of Duty: MW3" to 142.0,
+                "Fortnite" to 195.0
+            ),
+            powerConsumption = 285,
+            msrp = 799
+        ),
+        GPUPerformanceData(
+            fullName = "RTX 4070",
+            shortName = "4070",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 62.0,
+                "Red Dead Redemption 2" to 71.0,
+                "Assassin's Creed Valhalla" to 56.0,
+                "Call of Duty: MW3" to 125.0,
+                "Fortnite" to 168.0
+            ),
+            powerConsumption = 200,
+            msrp = 599
+        ),
+        GPUPerformanceData(
+            fullName = "RTX 4060 Ti",
+            shortName = "4060 Ti",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 52.0,
+                "Red Dead Redemption 2" to 59.0,
+                "Assassin's Creed Valhalla" to 47.0,
+                "Call of Duty: MW3" to 108.0,
+                "Fortnite" to 142.0
+            ),
+            powerConsumption = 165,
+            msrp = 399
+        ),
+        GPUPerformanceData(
+            fullName = "RTX 4060",
+            shortName = "4060",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 44.0,
+                "Red Dead Redemption 2" to 51.0,
+                "Assassin's Creed Valhalla" to 40.0,
+                "Call of Duty: MW3" to 95.0,
+                "Fortnite" to 125.0
+            ),
+            powerConsumption = 115,
+            msrp = 299
+        ),
+        GPUPerformanceData(
+            fullName = "RX 7900 XTX",
+            shortName = "7900 XTX",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 91.0,
+                "Red Dead Redemption 2" to 103.0,
+                "Assassin's Creed Valhalla" to 82.0,
+                "Call of Duty: MW3" to 178.0,
+                "Fortnite" to 268.0
+            ),
+            powerConsumption = 355,
+            msrp = 999
+        ),
+        GPUPerformanceData(
+            fullName = "RX 7900 XT",
+            shortName = "7900 XT",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 79.0,
+                "Red Dead Redemption 2" to 89.0,
+                "Assassin's Creed Valhalla" to 71.0,
+                "Call of Duty: MW3" to 155.0,
+                "Fortnite" to 225.0
+            ),
+            powerConsumption = 315,
+            msrp = 899
+        ),
+        GPUPerformanceData(
+            fullName = "RX 7800 XT",
+            shortName = "7800 XT",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 68.0,
+                "Red Dead Redemption 2" to 77.0,
+                "Assassin's Creed Valhalla" to 61.0,
+                "Call of Duty: MW3" to 132.0,
+                "Fortnite" to 185.0
+            ),
+            powerConsumption = 263,
+            msrp = 499
+        ),
+        GPUPerformanceData(
+            fullName = "RTX 3080",
+            shortName = "3080",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 64.0,
+                "Red Dead Redemption 2" to 74.0,
+                "Assassin's Creed Valhalla" to 58.0,
+                "Call of Duty: MW3" to 128.0,
+                "Fortnite" to 172.0
+            ),
+            powerConsumption = 320,
+            msrp = 699
+        ),
+        GPUPerformanceData(
+            fullName = "RTX 3070",
+            shortName = "3070",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 54.0,
+                "Red Dead Redemption 2" to 62.0,
+                "Assassin's Creed Valhalla" to 49.0,
+                "Call of Duty: MW3" to 108.0,
+                "Fortnite" to 145.0
+            ),
+            powerConsumption = 220,
+            msrp = 499
+        ),
+        GPUPerformanceData(
+            fullName = "RTX 5070",
+            shortName = "5070",
+            gamePerformance = mapOf(
+                "Cyberpunk 2077" to 78.0,
+                "Red Dead Redemption 2" to 88.0,
+                "Assassin's Creed Valhalla" to 71.0,
+                "Call of Duty: MW3" to 148.0,
+                "Fortnite" to 185.0
+            ),
+            powerConsumption = 220,
+            msrp = 549
+        )
     )
 
     private val gpuQuestions = listOf(
-        GameQuestion("gpu_1", "What FPS does this mystery GPU achieve in Cyberpunk 2077?", 98.0, "FPS", GameCategory.GPU, QuestionDifficulty.MEDIUM, "High-end consumer GPU", "Look at the performance pattern across games"),
-        GameQuestion("gpu_2", "What FPS does this mystery GPU achieve in Red Dead Redemption 2?", 112.0, "FPS", GameCategory.GPU, QuestionDifficulty.MEDIUM, "Top-tier performance GPU", "Compare relative performance to other GPUs"),
-        GameQuestion("gpu_3", "What FPS does this mystery GPU achieve in Cyberpunk 2077?", 82.0, "FPS", GameCategory.GPU, QuestionDifficulty.EASY, "High-performance gaming GPU", "Strong performance in demanding games"),
-        GameQuestion("gpu_4", "What FPS does this mystery GPU achieve in Fortnite (1080p)?", 285.0, "FPS", GameCategory.GPU, QuestionDifficulty.HARD, "Flagship gaming GPU", "Exceptional performance in competitive games"),
-        GameQuestion("gpu_5", "What FPS does this mystery GPU achieve in Red Dead Redemption 2?", 89.0, "FPS", GameCategory.GPU, QuestionDifficulty.MEDIUM, "AMD flagship GPU", "Strong performance across all games")
+        GameQuestion("gpu_1", "What GPU is this?", 0.0, "", GameCategory.GPU, QuestionDifficulty.MEDIUM, "High-end flagship GPU from NVIDIA", "Look at the performance pattern across different games"),
+        GameQuestion("gpu_2", "What GPU is this?", 0.0, "", GameCategory.GPU, QuestionDifficulty.EASY, "Popular high-end gaming GPU", "Compare relative performance to other GPUs shown"),
+        GameQuestion("gpu_3", "What GPU is this?", 0.0, "", GameCategory.GPU, QuestionDifficulty.MEDIUM, "Mid-range gaming GPU", "Notice the performance scaling across games"),
+        GameQuestion("gpu_4", "What GPU is this?", 0.0, "", GameCategory.GPU, QuestionDifficulty.HARD, "AMD flagship GPU", "Strong performance competitor to NVIDIA's high-end"),
+        GameQuestion("gpu_5", "What GPU is this?", 0.0, "", GameCategory.GPU, QuestionDifficulty.MEDIUM, "Next-gen gaming GPU", "Latest generation with improved efficiency")
     )
 
     fun getQuestionsForCategory(category: GameCategory): List<GameQuestion> {
@@ -88,31 +240,88 @@ object GameData {
     }
 
     fun getGPUChartData(questionId: String): GPUChartData? {
-        val question = gpuQuestions.find { it.id == questionId } ?: return null
-
-        // Find the mystery GPU based on the correct answer
+        // Select mystery GPU based on question
         val mysteryGpu = when (questionId) {
-            "gpu_1", "gpu_2" -> gpuPerformanceDatabase.find { it.gpuName == "RTX 4090" }
-            "gpu_3" -> gpuPerformanceDatabase.find { it.gpuName == "RTX 4080" }
-            "gpu_4" -> gpuPerformanceDatabase.find { it.gpuName == "RTX 4090" }
-            "gpu_5" -> gpuPerformanceDatabase.find { it.gpuName == "RX 7900 XTX" }
+            "gpu_1" -> gpuPerformanceDatabase.find { it.shortName == "4090" }
+            "gpu_2" -> gpuPerformanceDatabase.find { it.shortName == "4080" }
+            "gpu_3" -> gpuPerformanceDatabase.find { it.shortName == "4070" }
+            "gpu_4" -> gpuPerformanceDatabase.find { it.shortName == "7900 XTX" }
+            "gpu_5" -> gpuPerformanceDatabase.find { it.shortName == "5070" }
             else -> null
         } ?: return null
 
-        // Select 3 comparison GPUs (different performance tiers)
+        // Select 4-5 comparison GPUs (different performance tiers)
         val comparisonGpus = gpuPerformanceDatabase
-            .filter { it.gpuName != mysteryGpu.gpuName }
+            .filter { it.fullName != mysteryGpu.fullName }
             .shuffled()
-            .take(3)
+            .take(4)
+
+        // Select 3-4 games to show (random selection from available games)
+        val selectedGames = gamesList.shuffled().take(3)
 
         return GPUChartData(
-            game1Name = "Cyberpunk 2077",
-            game2Name = "Red Dead Redemption 2",
+            games = selectedGames,
             mysteryGpu = mysteryGpu,
             comparisonGpus = comparisonGpus,
-            game1MetricName = "FPS at 1440p Ultra",
-            game2MetricName = "FPS at 1440p Ultra"
+            unit = "FPS"
         )
+    }
+
+    fun findGPUByName(guessedName: String): GPUPerformanceData? {
+        val normalizedGuess = guessedName.trim().lowercase()
+
+        // Try exact matches first (both full and short names)
+        return gpuPerformanceDatabase.find { gpu ->
+            gpu.fullName.lowercase() == normalizedGuess ||
+                    gpu.shortName.lowercase() == normalizedGuess
+        } ?: gpuPerformanceDatabase.find { gpu ->
+            // Try partial matches
+            gpu.fullName.lowercase().contains(normalizedGuess) ||
+                    gpu.shortName.lowercase().contains(normalizedGuess) ||
+                    normalizedGuess.contains(gpu.shortName.lowercase())
+        }
+    }
+
+    fun isExactGPUMatch(guessedName: String, actualGpu: GPUPerformanceData): Boolean {
+        val normalizedGuess = guessedName.trim().lowercase()
+        return actualGpu.fullName.lowercase() == normalizedGuess ||
+                actualGpu.shortName.lowercase() == normalizedGuess
+    }
+
+    fun calculateGPUPerformanceDistance(gpu1: GPUPerformanceData, gpu2: GPUPerformanceData, games: List<String>): Double {
+        val gpu1Avg = games.map { gpu1.getPerformance(it) }.average()
+        val gpu2Avg = games.map { gpu2.getPerformance(it) }.average()
+        return kotlin.math.abs(gpu1Avg - gpu2Avg)
+    }
+
+    fun processGPUGuesses(
+        playerAnswers: List<PlayerAnswer>,
+        actualGpu: GPUPerformanceData,
+        chartData: GPUChartData
+    ): List<GPUGuess> {
+        return playerAnswers.map { answer ->
+            val guessedGpuName = answer.answer.toString() // This will be the GPU name string
+            val isExact = isExactGPUMatch(guessedGpuName, actualGpu)
+
+            val performanceDistance = if (isExact) {
+                0.0
+            } else {
+                val guessedGpu = findGPUByName(guessedGpuName)
+                if (guessedGpu != null) {
+                    calculateGPUPerformanceDistance(guessedGpu, actualGpu, chartData.games)
+                } else {
+                    Double.MAX_VALUE // Invalid GPU name gets maximum distance
+                }
+            }
+
+            GPUGuess(
+                playerId = answer.playerId,
+                guessedGpuName = guessedGpuName,
+                actualGpu = actualGpu,
+                isExactMatch = isExact,
+                performanceDistance = performanceDistance
+            )
+        }
     }
 
     fun getAllCategories(): List<GameCategory> {

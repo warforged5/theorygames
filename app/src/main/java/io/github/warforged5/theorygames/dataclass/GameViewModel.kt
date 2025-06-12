@@ -192,6 +192,10 @@ class GameViewModel : ViewModel() {
     }
 
     fun submitAnswer(playerId: String, answer: Double, powerUpUsed: PowerUpType? = null) {
+        submitNumericAnswer(playerId, answer, powerUpUsed)
+    }
+
+    fun submitTextAnswer(playerId: String, textAnswer: String, powerUpUsed: PowerUpType? = null) {
         // Only allow current player to submit
         val currentPlayerIndex = _gameState.value.currentPlayerTurnIndex
         val currentPlayer = _gameState.value.players.getOrNull(currentPlayerIndex)
@@ -204,7 +208,50 @@ class GameViewModel : ViewModel() {
         if (existingAnswer != null) return
 
         val timeTaken = (System.currentTimeMillis() - _questionStartTime) / 1000.0
-        val playerAnswer = PlayerAnswer(playerId, answer, timeTaken = timeTaken, powerUpUsed = powerUpUsed)
+        val playerAnswer = PlayerAnswer(
+            playerId = playerId,
+            textAnswer = textAnswer.trim(),
+            timeTaken = timeTaken,
+            powerUpUsed = powerUpUsed
+        )
+        val updatedAnswers = _gameState.value.playerAnswers + playerAnswer
+
+        _gameState.value = _gameState.value.copy(playerAnswers = updatedAnswers)
+
+        // Handle power-up usage
+        powerUpUsed?.let { powerUp ->
+            usePowerUp(playerId, powerUp)
+        }
+
+        // Check for speed achievements
+        if (timeTaken < 5.0) {
+            unlockAchievement(playerId, AchievementType.SPEED_DEMON)
+        }
+
+        // Stop current timer and move to next player
+        timerJob?.cancel()
+        moveToNextPlayer()
+    }
+
+    private fun submitNumericAnswer(playerId: String, answer: Double, powerUpUsed: PowerUpType? = null) {
+        // Only allow current player to submit
+        val currentPlayerIndex = _gameState.value.currentPlayerTurnIndex
+        val currentPlayer = _gameState.value.players.getOrNull(currentPlayerIndex)
+
+        if (currentPlayer?.id != playerId) return
+        if (_gameState.value.frozenPlayers.contains(playerId)) return
+
+        // Check if player has already answered this round
+        val existingAnswer = _gameState.value.playerAnswers.find { it.playerId == playerId }
+        if (existingAnswer != null) return
+
+        val timeTaken = (System.currentTimeMillis() - _questionStartTime) / 1000.0
+        val playerAnswer = PlayerAnswer(
+            playerId = playerId,
+            answer = answer,
+            timeTaken = timeTaken,
+            powerUpUsed = powerUpUsed
+        )
         val updatedAnswers = _gameState.value.playerAnswers + playerAnswer
 
         _gameState.value = _gameState.value.copy(playerAnswers = updatedAnswers)
@@ -571,8 +618,8 @@ class GameViewModel : ViewModel() {
         return _gameState.value.players.find { it.id == playerId }?.powerUps ?: emptyList()
     }
 
-    fun clearLastAchievements() {
-        _lastAchievements.clear()
+    fun findGPUWinner(answers: List<PlayerAnswer>, question: GameQuestion): Player? {
+        return findGPUWinner(answers, question)
     }
 
     override fun onCleared() {
