@@ -324,6 +324,10 @@ object GameData {
         }
     }
 
+    fun getAllGPUs(): List<GPUPerformanceData> {
+        return gpuPerformanceDatabase
+    }
+
     fun getAllCategories(): List<GameCategory> {
         return GameCategory.values().toList()
     }
