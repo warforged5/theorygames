@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -37,7 +38,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
-import kotlin.math.abs
+import androidx.compose.foundation.border
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -1183,307 +1184,315 @@ fun EnhancedPlayerAnswerCard(
     val currentQuestion = gameViewModel.gameState.value.currentQuestion
     val isGPUQuestion = currentQuestion?.category == GameCategory.GPU
 
-    ElevatedCard(
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = when {
-                isFrozen -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                hasAnswered -> MaterialTheme.colorScheme.primaryContainer
-                isCurrentPlayer -> MaterialTheme.colorScheme.secondaryContainer
-                else -> MaterialTheme.colorScheme.surface
-            }
-        ),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+    Box {
+        // Turn indicator border
+        TurnIndicator(
+            isCurrentPlayer = isCurrentPlayer,
+            hasAnswered = hasAnswered,
+            isWaitingForTurn = isWaitingForTurn
+        )
+
+        ElevatedCard(
+            // Remove the color-based turn indication, use consistent card color
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = when {
+                    isFrozen -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                    hasAnswered -> MaterialTheme.colorScheme.surfaceContainerHigh
+                    else -> MaterialTheme.colorScheme.surface
+                }
+            ),
+            modifier = Modifier.padding(2.dp) // Small padding for the border effect
         ) {
-            // Player header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.padding(16.dp)
             ) {
+                // Player header with new status badge
                 Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
-                        modifier = Modifier.size(40.dp),
-                        shape = CircleShape,
-                        color = when {
-                            isCurrentPlayer && !hasAnswered -> MaterialTheme.colorScheme.primary
-                            else -> MaterialTheme.colorScheme.primaryContainer
-                        }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            contentAlignment = Alignment.Center
+                        // Player avatar with enhanced styling for current player
+                        Surface(
+                            modifier = Modifier.size(40.dp),
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            border = if (isCurrentPlayer && !hasAnswered) {
+                                BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                            } else null
                         ) {
-                            Text(
-                                player.avatar.emoji,
-                                style = MaterialTheme.typography.titleMedium
-                            )
+                            Box(
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    player.avatar.emoji,
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
                         }
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                player.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (isCurrentPlayer && !hasAnswered) {
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    player.name,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
+                                // New status badge
+                                PlayerStatusBadge(
+                                    isCurrentPlayer = isCurrentPlayer && !hasAnswered,
+                                    hasAnswered = hasAnswered,
+                                    isWaitingForTurn = isWaitingForTurn,
+                                    isFrozen = isFrozen
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "Score: ${player.score}",
+                                    style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.primary
-                                ) {
-                                    Text(
-                                        "YOUR TURN",
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                )
+                                if (player.currentStreak > 0) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = MaterialTheme.colorScheme.tertiaryContainer
+                                    ) {
+                                        Text(
+                                            "${player.currentStreak} streak",
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        )
+                                    }
                                 }
                             }
                         }
+                    }
+
+                    // Power-ups button
+                    if (player.powerUps.isNotEmpty() && !hasAnswered && isCurrentPlayer) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                "Score: ${player.score}",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            if (player.currentStreak > 0) {
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = MaterialTheme.colorScheme.tertiaryContainer
-                                ) {
-                                    Text(
-                                        "${player.currentStreak} streak",
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onTertiaryContainer
-                                    )
-                                }
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            ) {
+                                Text("${player.powerUps.size}")
+                            }
+                            IconButton(
+                                onClick = { showPowerUps = !showPowerUps }
+                            ) {
+                                Icon(
+                                    if (showPowerUps) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                    contentDescription = "Power-ups"
+                                )
                             }
                         }
                     }
                 }
 
-                // Power-ups button
-                if (player.powerUps.isNotEmpty() && !hasAnswered && isCurrentPlayer) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                // Content based on state - same as before but with cleaner styling
+                if (isFrozen) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.errorContainer
                     ) {
-                        Badge(
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ) {
-                            Text("${player.powerUps.size}")
-                        }
-                        IconButton(
-                            onClick = { showPowerUps = !showPowerUps }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                if (showPowerUps) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = "Power-ups"
+                                Icons.Default.AcUnit,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onErrorContainer
                             )
-                        }
-                    }
-                }
-            }
-
-            // Content based on state
-            if (isFrozen) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainer
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.AcUnit,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Frozen for 5 seconds",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
-            } else if (hasAnswered) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Answer submitted",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            } else if (isWaitingForTurn) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainer
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.AccessTime,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Waiting for your turn...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            } else if (isCurrentPlayer) {
-                // Answer input section for current player
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Power-ups selection
-                AnimatedVisibility(
-                    visible = showPowerUps,
-                    enter = expandVertically() + fadeIn(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    PowerUpSelector(
-                        powerUps = player.powerUps,
-                        selectedPowerUp = selectedPowerUp,
-                        onPowerUpSelected = { selectedPowerUp = it }
-                    )
-                }
-
-                if (isGPUQuestion) {
-                    // GPU Search Component
-                    Column {
-                        GPUSearchBox(
-                            searchText = gpuSearchText,
-                            onSearchTextChanged = { gpuSearchText = it },
-                            onGPUSelected = { gpu ->
-                                selectedGPU = gpu
-                                gpuSearchText = ""
-                            },
-                            onClearSelection = {
-                                selectedGPU = null
-                                gpuSearchText = ""
-                            },
-                            selectedGPU = selectedGPU,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        // Submit button for GPU
-                        FilledTonalButton(
-                            onClick = {
-                                selectedGPU?.let { gpu ->
-                                    onSubmitTextAnswer(gpu.fullName, selectedPowerUp)
-                                    selectedGPU = null
-                                    gpuSearchText = ""
-                                    selectedPowerUp = null
-                                    showPowerUps = false
-                                }
-                            },
-                            enabled = selectedGPU != null,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(Icons.Default.Send, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = if (selectedGPU != null)
-                                    "Submit ${selectedGPU!!.fullName}"
-                                else "Select a GPU to submit"
+                                "Frozen for 5 seconds",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer
                             )
                         }
                     }
-                } else {
-                    // Regular numeric input
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                } else if (hasAnswered) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
                     ) {
-                        OutlinedTextField(
-                            value = answer,
-                            onValueChange = { answer = it },
-                            label = { Text("Your Answer") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(
-                                keyboardType = KeyboardType.Decimal,
-                                imeAction = ImeAction.Done
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onDone = {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "Answer submitted",
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                } else if (isWaitingForTurn) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainer
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.AccessTime,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "Waiting for your turn...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                } else if (isCurrentPlayer) {
+                    // Answer input section for current player
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Power-ups selection
+                    AnimatedVisibility(
+                        visible = showPowerUps,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
+                        PowerUpSelector(
+                            powerUps = player.powerUps,
+                            selectedPowerUp = selectedPowerUp,
+                            onPowerUpSelected = { selectedPowerUp = it }
+                        )
+                    }
+
+                    if (isGPUQuestion) {
+                        // GPU Search Component
+                        Column {
+                            GPUSearchBox(
+                                searchText = gpuSearchText,
+                                onSearchTextChanged = { gpuSearchText = it },
+                                onGPUSelected = { gpu ->
+                                    selectedGPU = gpu
+                                    gpuSearchText = ""
+                                },
+                                onClearSelection = {
+                                    selectedGPU = null
+                                    gpuSearchText = ""
+                                },
+                                selectedGPU = selectedGPU,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            // Submit button for GPU
+                            FilledTonalButton(
+                                onClick = {
+                                    selectedGPU?.let { gpu ->
+                                        onSubmitTextAnswer(gpu.fullName, selectedPowerUp)
+                                        selectedGPU = null
+                                        gpuSearchText = ""
+                                        selectedPowerUp = null
+                                        showPowerUps = false
+                                    }
+                                },
+                                enabled = selectedGPU != null,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Default.Send, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (selectedGPU != null)
+                                        "Submit ${selectedGPU!!.fullName}"
+                                    else "Select a GPU to submit"
+                                )
+                            }
+                        }
+                    } else {
+                        // Regular numeric input
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = answer,
+                                onValueChange = { answer = it },
+                                label = { Text("Your Answer") },
+                                modifier = Modifier.weight(1f),
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(
+                                    keyboardType = KeyboardType.Decimal,
+                                    imeAction = ImeAction.Done
+                                ),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        answer.toDoubleOrNull()?.let { answerValue ->
+                                            onSubmitAnswer(answerValue, selectedPowerUp)
+                                            answer = ""
+                                            selectedPowerUp = null
+                                            showPowerUps = false
+                                        }
+                                        focusManager.clearFocus()
+                                    }
+                                ),
+                                suffix = {
+                                    currentQuestion?.unit?.let { unit ->
+                                        if (unit.isNotEmpty()) {
+                                            Text(
+                                                unit,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            FilledIconButton(
+                                onClick = {
                                     answer.toDoubleOrNull()?.let { answerValue ->
                                         onSubmitAnswer(answerValue, selectedPowerUp)
                                         answer = ""
                                         selectedPowerUp = null
                                         showPowerUps = false
                                     }
-                                    focusManager.clearFocus()
-                                }
-                            ),
-                            suffix = {
-                                currentQuestion?.unit?.let { unit ->
-                                    if (unit.isNotEmpty()) {
-                                        Text(
-                                            unit,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
+                                },
+                                enabled = answer.toDoubleOrNull() != null
+                            ) {
+                                Icon(Icons.Default.Send, contentDescription = "Submit")
                             }
-                        )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        FilledIconButton(
-                            onClick = {
-                                answer.toDoubleOrNull()?.let { answerValue ->
-                                    onSubmitAnswer(answerValue, selectedPowerUp)
-                                    answer = ""
-                                    selectedPowerUp = null
-                                    showPowerUps = false
-                                }
-                            },
-                            enabled = answer.toDoubleOrNull() != null
-                        ) {
-                            Icon(Icons.Default.Send, contentDescription = "Submit")
                         }
                     }
                 }
@@ -1491,6 +1500,121 @@ fun EnhancedPlayerAnswerCard(
         }
     }
 }
+
+@Composable
+fun TurnIndicator(
+    isCurrentPlayer: Boolean,
+    hasAnswered: Boolean,
+    isWaitingForTurn: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "turn_indicator")
+
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000),
+            repeatMode = RepeatMode.Reverse
+        ), label = "pulse"
+    )
+
+    val borderColor by animateColorAsState(
+        targetValue = when {
+            hasAnswered -> MaterialTheme.colorScheme.primary
+            isCurrentPlayer -> MaterialTheme.colorScheme.secondary
+            isWaitingForTurn -> MaterialTheme.colorScheme.outline
+            else -> Color.Transparent
+        },
+        animationSpec = tween(300), label = "border_color"
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                width = if (isCurrentPlayer && !hasAnswered) 3.dp else 1.dp,
+                color = if (isCurrentPlayer && !hasAnswered) {
+                    borderColor.copy(alpha = pulseAlpha)
+                } else {
+                    borderColor
+                },
+                shape = RoundedCornerShape(12.dp)
+            )
+    )
+}
+
+@Composable
+fun PlayerStatusBadge(
+    isCurrentPlayer: Boolean,
+    hasAnswered: Boolean,
+    isWaitingForTurn: Boolean,
+    isFrozen: Boolean
+) {
+    AnimatedVisibility(
+        visible = isCurrentPlayer || hasAnswered || isWaitingForTurn || isFrozen,
+        enter = scaleIn() + fadeIn(),
+        exit = scaleOut() + fadeOut()
+    ) {
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            color = when {
+                isFrozen -> MaterialTheme.colorScheme.errorContainer
+                hasAnswered -> MaterialTheme.colorScheme.primaryContainer
+                isCurrentPlayer -> MaterialTheme.colorScheme.secondary
+                isWaitingForTurn -> MaterialTheme.colorScheme.surfaceContainer
+                else -> Color.Transparent
+            }
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = when {
+                        isFrozen -> Icons.Default.AcUnit
+                        hasAnswered -> Icons.Default.CheckCircle
+                        isCurrentPlayer -> Icons.Default.PlayArrow
+                        isWaitingForTurn -> Icons.Default.AccessTime
+                        else -> Icons.Default.Circle
+                    },
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = when {
+                        isFrozen -> MaterialTheme.colorScheme.onErrorContainer
+                        hasAnswered -> MaterialTheme.colorScheme.onPrimaryContainer
+                        isCurrentPlayer -> MaterialTheme.colorScheme.onSecondary
+                        isWaitingForTurn -> MaterialTheme.colorScheme.onSurfaceVariant
+                        else -> Color.Transparent
+                    }
+                )
+
+                Spacer(modifier = Modifier.width(6.dp))
+
+                Text(
+                    text = when {
+                        isFrozen -> "FROZEN"
+                        hasAnswered -> "ANSWERED"
+                        isCurrentPlayer -> "YOUR TURN"
+                        isWaitingForTurn -> "WAITING"
+                        else -> ""
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = when {
+                        isFrozen -> MaterialTheme.colorScheme.onErrorContainer
+                        hasAnswered -> MaterialTheme.colorScheme.onPrimaryContainer
+                        isCurrentPlayer -> MaterialTheme.colorScheme.onSecondary
+                        isWaitingForTurn -> MaterialTheme.colorScheme.onSurfaceVariant
+                        else -> Color.Transparent
+                    }
+                )
+            }
+        }
+    }
+}
+
+
 
 @Composable
 fun PowerUpSelector(
@@ -1555,132 +1679,22 @@ fun AnswerVisualizationCard(
             Spacer(modifier = Modifier.height(16.dp))
 
             if (isGPUQuestion) {
-                // Special GPU visualization
-                GPUResultsVisualization(
+                // Enhanced GPU visualization
+                GPUAnswerResults(
                     gameViewModel = gameViewModel,
                     currentQuestion = currentQuestion
                 )
             } else {
                 // Regular numeric visualization
-                visualizations.forEachIndexed { index, vis ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            if (vis.isWinner) {
-                                Icon(
-                                    Icons.Default.EmojiEvents,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            } else {
-                                Text(
-                                    "${index + 1}",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    vis.playerName,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = if (vis.isWinner) FontWeight.Bold else FontWeight.Normal
-                                )
-                                Text(
-                                    "Answer: ${vis.answer}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (vis.isWinner)
-                                MaterialTheme.colorScheme.primaryContainer
-                            else MaterialTheme.colorScheme.surfaceContainer
-                        ) {
-                            Text(
-                                "${vis.percentageError}% error",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = if (vis.isWinner)
-                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-                Divider()
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Text(
-                        "Correct Answer: ${visualizations.firstOrNull()?.correctAnswer ?: "N/A"}",
-                        modifier = Modifier.padding(12.dp),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
+                RegularAnswerResults(visualizations = visualizations)
             }
         }
     }
 }
 
 @Composable
-fun GPUResultsVisualization(
-    gameViewModel: GameViewModel,
-    currentQuestion: GameQuestion?
-) {
-    val gameState = gameViewModel.gameState.value
-    val chartData = currentQuestion?.let { GameData.getGPUChartData(it.id) }
-    val actualGpu = chartData?.mysteryGpu
-
-    if (actualGpu == null || chartData == null) {
-        Text("Unable to load GPU results")
-        return
-    }
-
-    // Process GPU guesses
-    val gpuGuesses = gameState.playerAnswers.map { answer ->
-        val guessedGpuName = answer.textAnswer
-        val isExact = GameData.isExactGPUMatch(guessedGpuName, actualGpu)
-
-        val performanceDistance = if (isExact) {
-            0.0
-        } else {
-            val guessedGpu = GameData.findGPUByName(guessedGpuName)
-            if (guessedGpu != null) {
-                GameData.calculateGPUPerformanceDistance(guessedGpu, actualGpu, chartData.games)
-            } else {
-                Double.MAX_VALUE
-            }
-        }
-
-        val player = gameState.players.find { it.id == answer.playerId }
-
-        Triple(
-            player?.name ?: "Unknown",
-            GPUGuess(answer.playerId, guessedGpuName, actualGpu, isExact, performanceDistance),
-            answer.playerId == gameViewModel.findGPUWinner(gameState.playerAnswers, currentQuestion)?.id
-        )
-    }.sortedBy { it.second.performanceDistance }
-
-    gpuGuesses.forEachIndexed { index, (playerName, guess, isWinner) ->
+private fun RegularAnswerResults(visualizations: List<AnswerVisualization>) {
+    visualizations.forEachIndexed { index, vis ->
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1691,7 +1705,7 @@ fun GPUResultsVisualization(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (isWinner) {
+                if (vis.isWinner) {
                     Icon(
                         Icons.Default.EmojiEvents,
                         contentDescription = null,
@@ -1708,12 +1722,12 @@ fun GPUResultsVisualization(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
-                        playerName,
+                        vis.playerName,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = if (isWinner) FontWeight.Bold else FontWeight.Normal
+                        fontWeight = if (vis.isWinner) FontWeight.Bold else FontWeight.Normal
                     )
                     Text(
-                        "Guess: ${guess.guessedGpuName}",
+                        "Answer: ${vis.answer}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1722,55 +1736,288 @@ fun GPUResultsVisualization(
 
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = when {
-                    guess.isExactMatch -> MaterialTheme.colorScheme.primaryContainer
-                    guess.performanceDistance == Double.MAX_VALUE -> MaterialTheme.colorScheme.errorContainer
-                    else -> MaterialTheme.colorScheme.surfaceContainer
-                }
+                color = if (vis.isWinner)
+                    MaterialTheme.colorScheme.primaryContainer
+                else MaterialTheme.colorScheme.surfaceContainer
             ) {
                 Text(
-                    when {
-                        guess.isExactMatch -> "✓ Exact Match"
-                        guess.performanceDistance == Double.MAX_VALUE -> "Invalid GPU"
-                        else -> "${guess.performanceDistance.toInt()} FPS diff"
-                    },
+                    "${vis.percentageError}% error",
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     style = MaterialTheme.typography.labelMedium,
-                    color = when {
-                        guess.isExactMatch -> MaterialTheme.colorScheme.onPrimaryContainer
-                        guess.performanceDistance == Double.MAX_VALUE -> MaterialTheme.colorScheme.onErrorContainer
-                        else -> MaterialTheme.colorScheme.onSurfaceVariant
-                    }
+                    color = if (vis.isWinner)
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
     }
 
     Spacer(modifier = Modifier.height(12.dp))
-    Divider()
+    HorizontalDivider()
     Spacer(modifier = Modifier.height(12.dp))
 
     Surface(
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.primaryContainer
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
+        Text(
+            "Correct Answer: ${visualizations.firstOrNull()?.correctAnswer ?: "N/A"}",
+            modifier = Modifier.padding(12.dp),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
+    }
+}
+
+@Composable
+private fun GPUAnswerResults(
+    gameViewModel: GameViewModel,
+    currentQuestion: GameQuestion?
+) {
+    val gameState = gameViewModel.gameState.value
+    val chartData = currentQuestion?.let { GameData.getGPUChartData(it.id) }
+    val actualGpu = chartData?.mysteryGpu
+
+    // Get the winner from the latest game result
+    val latestResult = gameViewModel.gameResults.lastOrNull()
+    val winnerPlayerId = latestResult?.winner?.id
+
+    if (actualGpu == null || chartData == null) {
+        Text(
+            "Unable to load GPU results",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error
+        )
+        return
+    }
+
+    // Process and sort GPU guesses by performance accuracy
+    val gpuGuesses = gameState.playerAnswers.mapNotNull { answer ->
+        val player = gameState.players.find { it.id == answer.playerId }
+        if (player == null) return@mapNotNull null
+
+        val guessedGpuName = if (answer.textAnswer.isNotEmpty()) {
+            answer.textAnswer
+        } else {
+            answer.answer.toString()
+        }
+
+        val isExact = GameData.isExactGPUMatch(guessedGpuName, actualGpu)
+        val performanceDistance = if (isExact) {
+            0.0
+        } else {
+            val guessedGpu = GameData.findGPUByName(guessedGpuName)
+            guessedGpu?.let {
+                GameData.calculateGPUPerformanceDistance(it, actualGpu, chartData.games)
+            } ?: Double.MAX_VALUE
+        }
+
+        GPUResultData(
+            playerName = player.name,
+            guessedGpuName = guessedGpuName,
+            isExactMatch = isExact,
+            performanceDistance = performanceDistance,
+            isWinner = answer.playerId == winnerPlayerId,
+            timeTaken = answer.timeTaken
+        )
+    }.sortedBy { it.performanceDistance }
+
+    // Display results
+    gpuGuesses.forEachIndexed { index, result ->
+        GPUResultRow(
+            position = index + 1,
+            result = result
+        )
+        if (index < gpuGuesses.size - 1) {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+
+    Spacer(modifier = Modifier.height(12.dp))
+    HorizontalDivider()
+    Spacer(modifier = Modifier.height(12.dp))
+
+    // Correct answer section with enhanced details
+    CorrectGPUAnswer(
+        actualGpu = actualGpu,
+        chartData = chartData
+    )
+}
+
+@Composable
+private fun GPUResultRow(
+    position: Int,
+    result: GPUResultData
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f)
+        ) {
+            // Position indicator
+            if (result.isWinner) {
+                Icon(
+                    Icons.Default.EmojiEvents,
+                    contentDescription = "Winner",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            } else {
+                Surface(
+                    modifier = Modifier.size(20.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surfaceContainer
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            "$position",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column {
+                Text(
+                    result.playerName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = if (result.isWinner) FontWeight.Bold else FontWeight.Normal
+                )
+                Text(
+                    "Guess: ${result.guessedGpuName}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (result.timeTaken > 0) {
+                    Text(
+                        "Time: ${String.format("%.1f", result.timeTaken)}s",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        // Accuracy indicator
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = when {
+                result.isExactMatch -> MaterialTheme.colorScheme.primaryContainer
+                result.performanceDistance == Double.MAX_VALUE -> MaterialTheme.colorScheme.errorContainer
+                result.performanceDistance < 20.0 -> MaterialTheme.colorScheme.secondaryContainer
+                else -> MaterialTheme.colorScheme.surfaceContainer
+            }
         ) {
             Text(
-                "Correct Answer: ${actualGpu.fullName}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            )
-            Text(
-                "Average Performance: ${actualGpu.getAveragePerformance().toInt()} FPS",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                when {
+                    result.isExactMatch -> "✓ Perfect"
+                    result.performanceDistance == Double.MAX_VALUE -> "Invalid"
+                    else -> "${result.performanceDistance.toInt()} FPS off"
+                },
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+                color = when {
+                    result.isExactMatch -> MaterialTheme.colorScheme.onPrimaryContainer
+                    result.performanceDistance == Double.MAX_VALUE -> MaterialTheme.colorScheme.onErrorContainer
+                    result.performanceDistance < 20.0 -> MaterialTheme.colorScheme.onSecondaryContainer
+                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                }
             )
         }
     }
 }
+
+@Composable
+private fun CorrectGPUAnswer(
+    actualGpu: GPUPerformanceData,
+    chartData: GPUChartData
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.primaryContainer
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Correct Answer",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                actualGpu.fullName,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+
+            Text(
+                "Average Performance: ${actualGpu.getAveragePerformance().toInt()} FPS",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Show specific game performances
+            Column {
+                chartData.games.forEach { game ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            game,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                        Text(
+                            "${actualGpu.getPerformance(game).toInt()} FPS",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Data class for cleaner GPU result handling
+private data class GPUResultData(
+    val playerName: String,
+    val guessedGpuName: String,
+    val isExactMatch: Boolean,
+    val performanceDistance: Double,
+    val isWinner: Boolean,
+    val timeTaken: Double
+)
 
 @Composable
 fun AchievementNotification(

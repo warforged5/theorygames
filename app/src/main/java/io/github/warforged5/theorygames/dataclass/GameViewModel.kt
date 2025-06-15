@@ -408,6 +408,25 @@ class GameViewModel : ViewModel() {
         }
     }
 
+    private fun endGame() {
+        // Cancel any running timer
+        timerJob?.cancel()
+
+        // Check for perfect game achievement
+        val topPlayer = _gameState.value.players.maxByOrNull { it.score }
+        topPlayer?.let { player ->
+            if (player.score == _gameResults.size) {
+                unlockAchievement(player.id, AchievementType.PERFECT_GAME)
+            }
+        }
+
+        _gameState.value = _gameState.value.copy(
+            isGameActive = false,
+            currentQuestion = null
+        )
+    }
+
+
     private fun calculatePoints(answers: List<PlayerAnswer>, question: GameQuestion, winner: Player?): Map<String, Int> {
         val pointsMap = mutableMapOf<String, Int>()
 
@@ -538,27 +557,48 @@ class GameViewModel : ViewModel() {
     private fun findWinner(answers: List<PlayerAnswer>, correctAnswer: Double): Player? {
         if (answers.isEmpty()) return null
 
+        val currentQuestion = _gameState.value.currentQuestion
+
+        // Handle GPU questions differently
+        if (currentQuestion?.category == GameCategory.GPU) {
+            return findGPUWinner(answers, currentQuestion)
+        }
+
+        // Handle regular numeric questions
         val closestAnswer = answers.minByOrNull { abs(it.answer - correctAnswer) }
         return _gameState.value.players.find { it.id == closestAnswer?.playerId }
     }
 
-    private fun endGame() {
-        // Cancel any running timer
-        timerJob?.cancel()
+    private fun findGPUWinner(answers: List<PlayerAnswer>, question: GameQuestion): Player? {
+        if (answers.isEmpty()) return null
 
-        // Check for perfect game achievement
-        val topPlayer = _gameState.value.players.maxByOrNull { it.score }
-        topPlayer?.let { player ->
-            if (player.score == _gameResults.size) {
-                unlockAchievement(player.id, AchievementType.PERFECT_GAME)
+        val chartData = GameData.getGPUChartData(question.id) ?: return null
+        val actualGpu = chartData.mysteryGpu
+
+        // Process all GPU guesses and find the best one
+        val gpuGuesses = answers.map { answer ->
+            val guessedGpuName = answer.textAnswer
+            val isExact = GameData.isExactGPUMatch(guessedGpuName, actualGpu)
+
+            val performanceDistance = if (isExact) {
+                0.0
+            } else {
+                val guessedGpu = GameData.findGPUByName(guessedGpuName)
+                if (guessedGpu != null) {
+                    GameData.calculateGPUPerformanceDistance(guessedGpu, actualGpu, chartData.games)
+                } else {
+                    Double.MAX_VALUE // Invalid GPU name gets maximum distance
+                }
             }
+
+            answer.playerId to performanceDistance
         }
 
-        _gameState.value = _gameState.value.copy(
-            isGameActive = false,
-            currentQuestion = null
-        )
+        // Find the player with the smallest performance distance (closest match)
+        val winnerPlayerId = gpuGuesses.minByOrNull { it.second }?.first
+        return _gameState.value.players.find { it.id == winnerPlayerId }
     }
+
 
     fun resetGame() {
         // Cancel any running timer
@@ -616,10 +656,6 @@ class GameViewModel : ViewModel() {
 
     fun getPlayerPowerUps(playerId: String): List<PowerUp> {
         return _gameState.value.players.find { it.id == playerId }?.powerUps ?: emptyList()
-    }
-
-    fun findGPUWinner(answers: List<PlayerAnswer>, question: GameQuestion): Player? {
-        return findGPUWinner(answers, question)
     }
 
     override fun onCleared() {

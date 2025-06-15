@@ -256,8 +256,8 @@ object GameData {
             .shuffled()
             .take(4)
 
-        // Select 3-4 games to show (random selection from available games)
-        val selectedGames = gamesList.shuffled().take(3)
+        // FIXED: Select only 2 games instead of 3
+        val selectedGames = gamesList.shuffled().take(2)
 
         return GPUChartData(
             games = selectedGames,
@@ -327,6 +327,8 @@ object GameData {
     fun getAllGPUs(): List<GPUPerformanceData> {
         return gpuPerformanceDatabase
     }
+
+
 
     fun getAllCategories(): List<GameCategory> {
         return GameCategory.values().toList()
