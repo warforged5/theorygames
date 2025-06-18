@@ -8,5 +8,8 @@ enum class GameCategory(val displayName: String, val icon: String) {
     ATOMIC_NUMBER("Atomic Numbers", "⚛️"),
     POPULATION("Population", "👥"),
     AREA("Country Area", "🗺️"),
-    GPU("GPU Performance", "🎮")
+    GPU("GPU Performance", "🎮"),
+    SCIENTIFIC_CONSTANTS("Scientific Constants", "🔬"),
+    STOCK_MARKET("Stock Market Values", "📊"),
+    MOVIE_ENTERTAINMENT("Movie & Entertainment", "🎬") // NEW CATEGORY
 }

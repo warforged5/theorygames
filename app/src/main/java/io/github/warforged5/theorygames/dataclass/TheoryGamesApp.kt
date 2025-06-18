@@ -29,7 +29,10 @@ fun TheoryGamesApp() {
         gameViewModel.setProfileManager(profileManager)
     }
 
-    TheoryGamesTheme {
+    TheoryGamesTheme(
+        selectedTheme = settings.selectedTheme.name, // Convert enum to string
+        isDarkMode = settings.isDarkMode
+    ) {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
@@ -44,7 +47,6 @@ fun TheoryGamesApp() {
         }
     }
 }
-
 @Composable
 fun TheoryGamesNavigation(
     navController: NavHostController,
@@ -89,7 +91,6 @@ fun TheoryGamesNavigation(
         }
 
         composable("results") {
-            // FIXED: Added missing profileManager parameter
             ResultsScreen(
                 gameViewModel = gameViewModel,
                 profileManager = profileManager,

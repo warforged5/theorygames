@@ -1,7 +1,5 @@
 package io.github.warforged5.theorygames.dataclass
 
-// Polished Screen Composables with Material 3 Design and Animations
-
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -11,12 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -26,8 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -40,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.border
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,15 +111,6 @@ fun MainMenuScreen(
         ), label = "alpha"
     )
 
-    val cardAnimation by infiniteTransition.animateFloat(
-        initialValue = 0.95f,
-        targetValue = 1.05f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000),
-            repeatMode = RepeatMode.Reverse
-        ), label = "cardScale"
-    )
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -186,7 +170,6 @@ fun MainMenuScreen(
             // Hero Section
             item {
                 AnimatedHeroCard(
-                    cardAnimation = cardAnimation,
                     onStartGame = onNavigateToSetup
                 )
             }
@@ -239,7 +222,6 @@ fun MainMenuScreen(
 
 @Composable
 private fun AnimatedHeroCard(
-    cardAnimation: Float,
     onStartGame: () -> Unit
 ) {
     ElevatedCard(
@@ -762,70 +744,6 @@ fun GameModeCard(
     }
 }
 
-@Composable
-fun EnhancedPlayerCard(
-    player: Player,
-    onRemove: () -> Unit,
-    showPowerUps: Boolean = false
-) {
-    ElevatedCard(
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    modifier = Modifier.size(48.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            player.avatar.emoji,
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Column {
-                    Text(
-                        player.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    if (showPowerUps && player.powerUps.isNotEmpty()) {
-                        Text(
-                            "Power-ups: ${player.powerUps.size}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            }
-
-            IconButton(
-                onClick = onRemove,
-                colors = IconButtonDefaults.iconButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Icon(Icons.Default.DeleteOutline, contentDescription = "Remove Player")
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameplayScreen(
@@ -953,177 +871,6 @@ fun GameplayScreen(
                     achievement = achievement,
                     modifier = Modifier.align(Alignment.TopCenter)
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun WelcomeBanner(
-    currentProfile: UserProfile?,
-    onCreateProfile: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        if (currentProfile != null) {
-            // Returning user welcome
-            Row(
-                modifier = Modifier.padding(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    modifier = Modifier.size(64.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            currentProfile.preferredAvatar.emoji,
-                            fontSize = 28.sp
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text(
-                        "Welcome back, ${currentProfile.name}!",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Text(
-                        "${currentProfile.getLevelTitle()} • Level ${currentProfile.getLevel()}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    if (currentProfile.totalGamesPlayed > 0) {
-                        Text(
-                            "${currentProfile.totalWins}/${currentProfile.totalGamesPlayed} games won (${currentProfile.getWinRate().toInt()}%)",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                        )
-                    }
-                }
-            }
-        } else {
-            // New user welcome
-            Column(
-                modifier = Modifier.padding(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    TheoryGamesIcons.Waving,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    "Welcome to TheoryGames!",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-
-                Text(
-                    "Create a profile to track your progress and compete with friends!",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = onCreateProfile,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Icon(Icons.Default.PersonAdd, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Create Profile")
-                }
-            }
-        }
-    }
-}
-@Composable
-fun AppIconDisplay(
-    modifier: Modifier = Modifier,
-    size: androidx.compose.ui.unit.Dp = 120.dp
-) {
-    Card(
-        modifier = modifier.size(size),
-        shape = CircleShape,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primary
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
-    ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Icon(
-                Icons.Default.Psychology,
-                contentDescription = "TheoryGames Logo",
-                modifier = Modifier.size(size * 0.5f),
-                tint = MaterialTheme.colorScheme.onPrimary
-            )
-        }
-    }
-}
-
-@Composable
-fun RecentActivityCard(
-    gameHistory: List<GameHistoryEntry>,
-    onViewMore: () -> Unit
-) {
-    if (gameHistory.isEmpty()) return
-
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    "Recent Activity",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-
-                TextButton(onClick = onViewMore) {
-                    Text("View All")
-                    Icon(
-                        Icons.Default.ChevronRight,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            gameHistory.take(3).forEach { entry ->
-                RecentActivityItem(entry = entry)
-                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
@@ -2431,130 +2178,6 @@ fun ResultsScreen(
                 if (allAchievements.isNotEmpty()) {
                     AchievementsCard(achievements = allAchievements)
                 }
-            }
-        }
-    }
-}
-
-// Helper function to update profile with game results
-private fun updateProfileWithGameResults(
-    profile: UserProfile,
-    player: Player,
-    finalPosition: Int,
-    category: GameCategory,
-    gameMode: GameMode,
-    totalRounds: Int,
-    accuracy: Double
-): UserProfile {
-    val won = finalPosition == 1
-    val newTotalGames = profile.totalGamesPlayed + 1
-    val newTotalWins = if (won) profile.totalWins + 1 else profile.totalWins
-    val newBestStreak = maxOf(profile.bestStreak, player.longestStreak)
-
-    // Update category stats
-    val currentCategoryStats = profile.categoryStats[category] ?: CategoryStats()
-    val newCategoryStats = currentCategoryStats.copy(
-        gamesPlayed = currentCategoryStats.gamesPlayed + 1,
-        wins = if (won) currentCategoryStats.wins + 1 else currentCategoryStats.wins,
-        bestStreak = maxOf(currentCategoryStats.bestStreak, player.longestStreak),
-        averageAccuracy = if (currentCategoryStats.gamesPlayed > 0) {
-            ((currentCategoryStats.averageAccuracy * currentCategoryStats.gamesPlayed) + accuracy) / (currentCategoryStats.gamesPlayed + 1)
-        } else accuracy,
-        lastPlayed = System.currentTimeMillis()
-    )
-
-    val updatedCategoryStats = profile.categoryStats.toMutableMap()
-    updatedCategoryStats[category] = newCategoryStats
-
-    return profile.copy(
-        totalGamesPlayed = newTotalGames,
-        totalWins = newTotalWins,
-        bestStreak = newBestStreak,
-        categoryStats = updatedCategoryStats,
-        lastPlayedAt = System.currentTimeMillis(),
-        achievements = profile.achievements + player.achievements, // Merge new achievements
-        preferredGameMode = gameMode // Update preference based on recent play
-    )
-}
-
-// New component for showing profile progress
-@Composable
-private fun ProfileProgressCard(
-    profile: UserProfile,
-    player: Player,
-    finalPosition: Int
-) {
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Text(
-                "Your Progress",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        "Final Position",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-                    )
-                    Text(
-                        "#$finalPosition",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-
-                Column {
-                    Text(
-                        "Rounds Won",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-                    )
-                    Text(
-                        "${player.score}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                }
-
-                Column {
-                    Text(
-                        "New Level",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
-                    )
-                    Text(
-                        "${profile.getLevel()}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            }
-
-            if (player.achievements.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    "🎉 Unlocked ${player.achievements.size} new achievement${if (player.achievements.size > 1) "s" else ""}!",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                )
             }
         }
     }

@@ -210,6 +210,320 @@ object GameData {
         )
     )
 
+    private val movieEntertainmentQuestions = listOf(
+        // CLASSIC MOVIES & BOX OFFICE - EASY
+        GameQuestion(
+            "movie_1",
+            "What year was 'The Godfather' released?",
+            1972.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.EASY,
+            "Francis Ford Coppola's masterpiece",
+            "Often considered one of the greatest films ever made, launched the crime saga"
+        ),
+        GameQuestion(
+            "movie_2",
+            "What is the IMDb rating of 'The Shawshank Redemption' (out of 10)?",
+            9.3,
+            "/10",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.EASY,
+            "Highest-rated movie on IMDb",
+            "Stephen King adaptation starring Tim Robbins and Morgan Freeman"
+        ),
+        GameQuestion(
+            "movie_3",
+            "What year was 'Star Wars: A New Hope' released?",
+            1977.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.EASY,
+            "The original Star Wars movie",
+            "George Lucas launched the iconic space opera franchise"
+        ),
+        GameQuestion(
+            "movie_4",
+            "What is 'Avatar' (2009) worldwide box office total (billion USD)?",
+            2.92,
+            "billion USD",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "James Cameron's 3D blockbuster",
+            "Held the worldwide box office record for over a decade"
+        ),
+        GameQuestion(
+            "movie_5",
+            "What year was 'Titanic' released?",
+            1997.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.EASY,
+            "James Cameron's epic romance",
+            "Dominated the 1997 box office and won 11 Oscars"
+        ),
+
+        // MODERN BLOCKBUSTERS - MEDIUM
+        GameQuestion(
+            "movie_6",
+            "What is 'Avengers: Endgame' worldwide box office (billion USD)?",
+            2.798,
+            "billion USD",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Marvel's epic conclusion to the Infinity Saga",
+            "Briefly held the worldwide box office record before Avatar re-releases"
+        ),
+        GameQuestion(
+            "movie_7",
+            "What is the runtime of 'Avengers: Endgame' (minutes)?",
+            181.0,
+            "minutes",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "One of the longest Marvel movies",
+            "3 hours and 1 minute of superhero action"
+        ),
+        GameQuestion(
+            "movie_8",
+            "What is 'Top Gun: Maverick' domestic box office (million USD)?",
+            719.0,
+            "million USD",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Tom Cruise's long-awaited sequel",
+            "Massive hit that revived the franchise after 36 years"
+        ),
+        GameQuestion(
+            "movie_9",
+            "What is 'Spider-Man: No Way Home' worldwide box office (billion USD)?",
+            1.92,
+            "billion USD",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Multi-verse Spider-Man crossover",
+            "Featured three Spider-Man actors and multiple villains"
+        ),
+        GameQuestion(
+            "movie_10",
+            "What year was 'The Dark Knight' released?",
+            2008.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.EASY,
+            "Christopher Nolan's Batman masterpiece",
+            "Heath Ledger's iconic Joker performance"
+        ),
+
+        // OSCAR WINNERS & CRITICAL ACCLAIM - MEDIUM/HARD
+        GameQuestion(
+            "movie_11",
+            "How many Oscars did 'Lord of the Rings: Return of the King' win?",
+            11.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Swept the Academy Awards",
+            "Won every category it was nominated for, tying the record"
+        ),
+        GameQuestion(
+            "movie_12",
+            "What is 'Parasite' (2019) IMDb rating (out of 10)?",
+            8.5,
+            "/10",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.HARD,
+            "Bong Joon-ho's Oscar-winning thriller",
+            "First non-English film to win Best Picture"
+        ),
+        GameQuestion(
+            "movie_13",
+            "How many Oscars did 'Titanic' win?",
+            11.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Tied the record for most Oscar wins",
+            "Dominated the 1998 Academy Awards ceremony"
+        ),
+        GameQuestion(
+            "movie_14",
+            "What is 'Citizen Kane' IMDb rating (out of 10)?",
+            8.3,
+            "/10",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.HARD,
+            "Orson Welles' cinematic masterpiece",
+            "Often cited by critics as the greatest film ever made"
+        ),
+        GameQuestion(
+            "movie_15",
+            "What year did 'Everything Everywhere All at Once' win Best Picture?",
+            2023.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Multiverse indie film phenomenon",
+            "Won 7 Oscars including Best Picture, Director, and Acting categories"
+        ),
+
+        // FRANCHISE & SERIES DATA - MEDIUM/HARD
+        GameQuestion(
+            "movie_16",
+            "What is the total worldwide box office of all Marvel MCU films (billion USD)?",
+            29.5,
+            "billion USD",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.HARD,
+            "Most successful film franchise ever",
+            "30+ films spanning over 15 years of interconnected storytelling"
+        ),
+        GameQuestion(
+            "movie_17",
+            "How many 'Fast & Furious' main series films are there?",
+            10.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Vin Diesel's action franchise",
+            "Started with street racing, evolved into global action spectacle"
+        ),
+        GameQuestion(
+            "movie_18",
+            "What is 'Harry Potter' franchise total worldwide box office (billion USD)?",
+            7.7,
+            "billion USD",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.HARD,
+            "8-film wizarding world saga",
+            "Based on J.K. Rowling's beloved book series"
+        ),
+        GameQuestion(
+            "movie_19",
+            "How many 'John Wick' movies have been released?",
+            4.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Keanu Reeves action franchise",
+            "Started with a simple revenge story, became action movie phenomenon"
+        ),
+        GameQuestion(
+            "movie_20",
+            "What is 'Star Wars' franchise total worldwide box office (billion USD)?",
+            10.3,
+            "billion USD",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.HARD,
+            "Galaxy far, far away",
+            "12 theatrical films spanning 45+ years"
+        ),
+
+        // STREAMING & MODERN ENTERTAINMENT - MEDIUM/HARD
+        GameQuestion(
+            "movie_21",
+            "What year did Netflix release 'Stranger Things' Season 1?",
+            2016.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Netflix's flagship original series",
+            "80s nostalgia sci-fi that launched the streaming wars"
+        ),
+        GameQuestion(
+            "movie_22",
+            "How many Emmy nominations did 'Game of Thrones' receive total?",
+            161.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.HARD,
+            "HBO's fantasy epic",
+            "Most Emmy-nominated drama series in television history"
+        ),
+        GameQuestion(
+            "movie_23",
+            "What is 'Squid Game' viewership in first 28 days (million hours)?",
+            1650.0,
+            "million hours",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.HARD,
+            "Netflix's Korean survival thriller",
+            "Became the most-watched Netflix series of all time"
+        ),
+        GameQuestion(
+            "movie_24",
+            "What year did Disney+ launch?",
+            2019.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Disney's streaming service",
+            "Launched with The Mandalorian as flagship content"
+        ),
+        GameQuestion(
+            "movie_25",
+            "How many seasons did 'Breaking Bad' have?",
+            5.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.EASY,
+            "Vince Gilligan's crime drama masterpiece",
+            "Widely considered one of the greatest TV series ever made"
+        ),
+
+        // ANIMATION & FAMILY FILMS - EASY/MEDIUM
+        GameQuestion(
+            "movie_26",
+            "What is 'Frozen' (2013) worldwide box office (billion USD)?",
+            1.28,
+            "billion USD",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Disney's animated musical phenomenon",
+            "'Let It Go' became a global cultural phenomenon"
+        ),
+        GameQuestion(
+            "movie_27",
+            "What year was 'Toy Story' released?",
+            1995.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.EASY,
+            "First fully computer-animated feature film",
+            "Pixar's groundbreaking debut launched modern animation"
+        ),
+        GameQuestion(
+            "movie_28",
+            "What is 'The Lion King' (1994) worldwide box office (million USD)?",
+            968.0,
+            "million USD",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Disney's animated classic",
+            "Highest-grossing traditionally animated film of all time"
+        ),
+        GameQuestion(
+            "movie_29",
+            "How many 'Shrek' movies are there?",
+            4.0,
+            "",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.EASY,
+            "DreamWorks' ogre franchise",
+            "Subversive fairy tale parody that became a cultural phenomenon"
+        ),
+        GameQuestion(
+            "movie_30",
+            "What is 'Spider-Man: Into the Spider-Verse' IMDb rating (out of 10)?",
+            8.4,
+            "/10",
+            GameCategory.MOVIE_ENTERTAINMENT,
+            QuestionDifficulty.MEDIUM,
+            "Revolutionary animated superhero film",
+            "Won the Oscar for Best Animated Feature with innovative animation style"
+        )
+    )
+
     private val gpuQuestions = listOf(
         GameQuestion("gpu_1", "What GPU is this?", 0.0, "", GameCategory.GPU, QuestionDifficulty.MEDIUM, "High-end flagship GPU from NVIDIA", "Look at the performance pattern across different games"),
         GameQuestion("gpu_2", "What GPU is this?", 0.0, "", GameCategory.GPU, QuestionDifficulty.EASY, "Popular high-end gaming GPU", "Compare relative performance to other GPUs shown"),
@@ -226,8 +540,640 @@ object GameData {
             GameCategory.POPULATION -> populationQuestions
             GameCategory.AREA -> areaQuestions
             GameCategory.GPU -> gpuQuestions
+            GameCategory.SCIENTIFIC_CONSTANTS -> scientificConstantsQuestions
+            GameCategory.STOCK_MARKET -> stockMarketQuestions
+            GameCategory.MOVIE_ENTERTAINMENT -> movieEntertainmentQuestions
         }
     }
+    private val scientificConstantsQuestions = listOf(
+        // PHYSICS CONSTANTS - EASY
+        GameQuestion(
+            "sci_1",
+            "What is the speed of light in vacuum (million m/s)?",
+            299.79,
+            "million m/s",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "The fastest speed possible in the universe",
+            "Exactly 299,792,458 m/s, often approximated as 3×10⁸ m/s"
+        ),
+        GameQuestion(
+            "sci_2",
+            "What is the acceleration due to gravity on Earth (m/s²)?",
+            9.81,
+            "m/s²",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "What goes up must come down at this rate",
+            "Standard gravity, varies slightly by location but 9.81 m/s² is the standard"
+        ),
+        GameQuestion(
+            "sci_3",
+            "What is absolute zero in Celsius?",
+            -273.15,
+            "°C",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "The coldest possible temperature",
+            "0 Kelvin = -273.15°C, where all molecular motion theoretically stops"
+        ),
+        GameQuestion(
+            "sci_4",
+            "What is the value of π (pi) to 2 decimal places?",
+            3.14,
+            "",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "The ratio of circumference to diameter",
+            "π = 3.14159265359... but 3.14 is the common approximation"
+        ),
+        GameQuestion(
+            "sci_5",
+            "What is normal human body temperature in Celsius?",
+            37.0,
+            "°C",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "The normal internal temperature of the human body",
+            "98.6°F = 37°C, though it can vary slightly between individuals"
+        ),
+
+        // CHEMISTRY & PHYSICS - MEDIUM
+        GameQuestion(
+            "sci_6",
+            "What is Avogadro's number (×10²³)?",
+            6.022,
+            "×10²³",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "Number of particles in one mole of substance",
+            "6.022×10²³, fundamental constant in chemistry for counting atoms/molecules"
+        ),
+        GameQuestion(
+            "sci_7",
+            "What is the boiling point of water at sea level (°C)?",
+            100.0,
+            "°C",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "When H₂O becomes steam at standard pressure",
+            "100°C at 1 atmosphere pressure, varies with altitude"
+        ),
+        GameQuestion(
+            "sci_8",
+            "What is the mass of an electron (×10⁻³¹ kg)?",
+            9.109,
+            "×10⁻³¹ kg",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "The rest mass of the fundamental particle",
+            "9.109×10⁻³¹ kg, about 1/1836 the mass of a proton"
+        ),
+        GameQuestion(
+            "sci_9",
+            "What is standard atmospheric pressure (kPa)?",
+            101.325,
+            "kPa",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "Air pressure at sea level",
+            "101.325 kPa = 1 atmosphere = 760 mmHg"
+        ),
+        GameQuestion(
+            "sci_10",
+            "What is the melting point of ice (°C)?",
+            0.0,
+            "°C",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "When solid water becomes liquid",
+            "0°C at standard pressure, also the freezing point"
+        ),
+
+        // ASTRONOMY & EARTH SCIENCE - MEDIUM/HARD
+        GameQuestion(
+            "sci_11",
+            "What is the average distance from Earth to the Sun (million km)?",
+            149.6,
+            "million km",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "One Astronomical Unit (AU)",
+            "149.6 million km = 1 AU, the baseline for measuring solar system distances"
+        ),
+        GameQuestion(
+            "sci_12",
+            "What is the diameter of Earth (thousand km)?",
+            12.756,
+            "thousand km",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "Distance through the center of our planet",
+            "12,756 km equatorial diameter, slightly flattened due to rotation"
+        ),
+        GameQuestion(
+            "sci_13",
+            "How long is one light-year (trillion km)?",
+            9.461,
+            "trillion km",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.HARD,
+            "Distance light travels in one year",
+            "9.461 trillion km, used to measure interstellar distances"
+        ),
+        GameQuestion(
+            "sci_14",
+            "What is the mass of Earth (×10²⁴ kg)?",
+            5.972,
+            "×10²⁴ kg",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.HARD,
+            "Total mass of our planet",
+            "5.972×10²⁴ kg, determined through gravitational measurements"
+        ),
+        GameQuestion(
+            "sci_15",
+            "What is the radius of Earth (thousand km)?",
+            6.371,
+            "thousand km",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "Distance from center to surface",
+            "6,371 km average radius, varies from equator to poles"
+        ),
+
+        // ADVANCED PHYSICS - HARD
+        GameQuestion(
+            "sci_16",
+            "What is Planck's constant (×10⁻³⁴ J⋅s)?",
+            6.626,
+            "×10⁻³⁴ J⋅s",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.HARD,
+            "Fundamental constant of quantum mechanics",
+            "6.626×10⁻³⁴ J⋅s, relates energy and frequency in quantum theory"
+        ),
+        GameQuestion(
+            "sci_17",
+            "What is the elementary charge (×10⁻¹⁹ C)?",
+            1.602,
+            "×10⁻¹⁹ C",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.HARD,
+            "Electric charge of a single proton/electron",
+            "1.602×10⁻¹⁹ coulombs, the smallest unit of electric charge"
+        ),
+        GameQuestion(
+            "sci_18",
+            "What is the universal gas constant R (J/mol⋅K)?",
+            8.314,
+            "J/mol⋅K",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.HARD,
+            "Constant in the ideal gas law PV = nRT",
+            "8.314 J/mol⋅K, relates pressure, volume, temperature and amount of gas"
+        ),
+        GameQuestion(
+            "sci_19",
+            "What is the Stefan-Boltzmann constant (×10⁻⁸ W/m²K⁴)?",
+            5.670,
+            "×10⁻⁸ W/m²K⁴",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.HARD,
+            "Relates temperature to radiated power",
+            "5.670×10⁻⁸ W/m²K⁴, used in blackbody radiation calculations"
+        ),
+        GameQuestion(
+            "sci_20",
+            "What is the gravitational constant G (×10⁻¹¹ m³/kg⋅s²)?",
+            6.674,
+            "×10⁻¹¹ m³/kg⋅s²",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.HARD,
+            "Universal constant in Newton's law of gravitation",
+            "6.674×10⁻¹¹ m³/kg⋅s², determines gravitational force strength"
+        ),
+
+        // CHEMISTRY SPECIFICS - MEDIUM/HARD
+        GameQuestion(
+            "sci_21",
+            "What is the atomic mass of carbon-12 (u)?",
+            12.000,
+            "u",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "Standard reference for atomic mass units",
+            "Exactly 12.000 u by definition, basis for all other atomic masses"
+        ),
+        GameQuestion(
+            "sci_22",
+            "What is the pH of pure water at 25°C?",
+            7.0,
+            "",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "Neutral pH value",
+            "pH 7.0 is neutral, below 7 is acidic, above 7 is basic"
+        ),
+        GameQuestion(
+            "sci_23",
+            "What is the boiling point of nitrogen (°C)?",
+            -195.8,
+            "°C",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "When liquid nitrogen becomes gas",
+            "-195.8°C at standard pressure, why liquid nitrogen is so cold"
+        ),
+        GameQuestion(
+            "sci_24",
+            "What is the density of water at 4°C (g/cm³)?",
+            1.000,
+            "g/cm³",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "Maximum density of H₂O",
+            "1.000 g/cm³ at 4°C, water is densest at this temperature"
+        ),
+        GameQuestion(
+            "sci_25",
+            "What is the half-life of carbon-14 (years)?",
+            5730.0,
+            "years",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "Used for radiocarbon dating",
+            "5,730 years, allows dating of organic materials up to ~50,000 years old"
+        ),
+
+        // MATHEMATICAL CONSTANTS - EASY/MEDIUM
+        GameQuestion(
+            "sci_26",
+            "What is Euler's number (e) to 2 decimal places?",
+            2.72,
+            "",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "Base of natural logarithms",
+            "e = 2.71828..., fundamental in calculus and exponential growth"
+        ),
+        GameQuestion(
+            "sci_27",
+            "What is the golden ratio (φ) to 2 decimal places?",
+            1.62,
+            "",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.MEDIUM,
+            "Ratio found throughout nature and art",
+            "φ = 1.618..., appears in spirals, proportions, and Fibonacci sequence"
+        ),
+        GameQuestion(
+            "sci_28",
+            "What is the square root of 2 to 2 decimal places?",
+            1.41,
+            "",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "Diagonal of a unit square",
+            "√2 = 1.414..., first known irrational number"
+        ),
+
+        // BIOLOGICAL CONSTANTS - EASY/MEDIUM
+        GameQuestion(
+            "sci_29",
+            "How many chromosomes do humans have?",
+            46.0,
+            "",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "Total number in diploid cells",
+            "46 chromosomes (23 pairs), including XY or XX sex chromosomes"
+        ),
+        GameQuestion(
+            "sci_30",
+            "What is a normal resting heart rate (beats per minute)?",
+            70.0,
+            "bpm",
+            GameCategory.SCIENTIFIC_CONSTANTS,
+            QuestionDifficulty.EASY,
+            "Average healthy adult heart rate",
+            "60-100 bpm is normal range, 70 bpm is typical average"
+        )
+    )
+
+    private val stockMarketQuestions = listOf(
+        // MAJOR TECH STOCKS - EASY
+        GameQuestion(
+            "stock_1",
+            "What is Apple's approximate stock price (USD)?",
+            190.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.EASY,
+            "World's most valuable company by market cap",
+            "Apple (AAPL) trades around $190, making it the most valuable public company"
+        ),
+        GameQuestion(
+            "stock_2",
+            "What is Microsoft's approximate stock price (USD)?",
+            415.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.EASY,
+            "Software giant and cloud computing leader",
+            "Microsoft (MSFT) benefits from Azure cloud growth and Office subscriptions"
+        ),
+        GameQuestion(
+            "stock_3",
+            "What is Tesla's approximate stock price (USD)?",
+            240.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.EASY,
+            "Electric vehicle and clean energy company",
+            "Tesla (TSLA) is known for high volatility and Elon Musk's leadership"
+        ),
+        GameQuestion(
+            "stock_4",
+            "What is Google's (Alphabet) approximate stock price (USD)?",
+            140.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.EASY,
+            "Search engine and advertising giant",
+            "Alphabet (GOOGL) dominates online search and digital advertising"
+        ),
+        GameQuestion(
+            "stock_5",
+            "What is Amazon's approximate stock price (USD)?",
+            155.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.EASY,
+            "E-commerce and cloud computing leader",
+            "Amazon (AMZN) leads in AWS cloud services and online retail"
+        ),
+
+        // MARKET CAPITALIZATIONS - MEDIUM
+        GameQuestion(
+            "stock_6",
+            "What is Apple's approximate market cap (trillion USD)?",
+            3.0,
+            "trillion USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Market value of all outstanding shares",
+            "Market cap = stock price × number of shares outstanding"
+        ),
+        GameQuestion(
+            "stock_7",
+            "What is NVIDIA's approximate market cap (trillion USD)?",
+            1.8,
+            "trillion USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "AI and graphics processing leader",
+            "NVIDIA benefits massively from AI boom and GPU demand"
+        ),
+        GameQuestion(
+            "stock_8",
+            "What is Bitcoin's approximate market cap (trillion USD)?",
+            1.2,
+            "trillion USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Largest cryptocurrency by market value",
+            "Bitcoin's market cap fluctuates significantly with price changes"
+        ),
+        GameQuestion(
+            "stock_9",
+            "What is the total US stock market cap (trillion USD)?",
+            45.0,
+            "trillion USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.HARD,
+            "Combined value of all US publicly traded companies",
+            "US stock market represents about 40% of global stock market value"
+        ),
+        GameQuestion(
+            "stock_10",
+            "What is Berkshire Hathaway's market cap (billion USD)?",
+            880.0,
+            "billion USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Warren Buffett's investment conglomerate",
+            "Known for long-term value investing and diverse holdings"
+        ),
+
+        // FINANCIAL RATIOS & METRICS - MEDIUM/HARD
+        GameQuestion(
+            "stock_11",
+            "What is the S&P 500's approximate P/E ratio?",
+            25.0,
+            "",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Price-to-earnings ratio of the index",
+            "P/E ratio shows how much investors pay per dollar of earnings"
+        ),
+        GameQuestion(
+            "stock_12",
+            "What is Tesla's approximate P/E ratio?",
+            65.0,
+            "",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.HARD,
+            "Tesla trades at a premium valuation",
+            "High P/E ratios often indicate growth expectations or overvaluation"
+        ),
+        GameQuestion(
+            "stock_13",
+            "What is the average dividend yield of S&P 500 (%)?",
+            1.8,
+            "%",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Annual dividends as percentage of stock price",
+            "Dividend yields have been declining as companies prefer buybacks"
+        ),
+        GameQuestion(
+            "stock_14",
+            "What is Apple's approximate P/E ratio?",
+            29.0,
+            "",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Premium valuation for quality company",
+            "Apple's P/E reflects its strong brand and consistent profits"
+        ),
+        GameQuestion(
+            "stock_15",
+            "What is the VIX volatility index typical level?",
+            20.0,
+            "",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.HARD,
+            "Fear gauge of the stock market",
+            "VIX above 30 indicates high fear, below 15 indicates complacency"
+        ),
+
+        // HISTORICAL & INDEX VALUES - EASY/MEDIUM
+        GameQuestion(
+            "stock_16",
+            "What is the Dow Jones approximate level?",
+            38000.0,
+            "",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.EASY,
+            "Price-weighted index of 30 large companies",
+            "Dow Jones Industrial Average is one of the oldest stock indices"
+        ),
+        GameQuestion(
+            "stock_17",
+            "What is the S&P 500 approximate level?",
+            5000.0,
+            "",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.EASY,
+            "Market-cap weighted index of 500 companies",
+            "S&P 500 is considered the best gauge of US stock market"
+        ),
+        GameQuestion(
+            "stock_18",
+            "What is the NASDAQ approximate level?",
+            16000.0,
+            "",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.EASY,
+            "Tech-heavy index including many growth stocks",
+            "NASDAQ Composite includes over 3,000 stocks"
+        ),
+        GameQuestion(
+            "stock_19",
+            "What was the Dow Jones peak in 2021?",
+            36799.0,
+            "",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "All-time high before 2022 bear market",
+            "Market peaked in late 2021 before inflation concerns hit"
+        ),
+        GameQuestion(
+            "stock_20",
+            "What is the Russell 2000 approximate level?",
+            2000.0,
+            "",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.HARD,
+            "Small-cap stock index",
+            "Russell 2000 tracks performance of 2,000 small-cap companies"
+        ),
+
+        // SPECIFIC COMPANY VALUES - MEDIUM/HARD
+        GameQuestion(
+            "stock_21",
+            "What is JPMorgan Chase's stock price (USD)?",
+            185.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Largest US bank by assets",
+            "JPMorgan (JPM) benefits from rising interest rates"
+        ),
+        GameQuestion(
+            "stock_22",
+            "What is Coca-Cola's approximate stock price (USD)?",
+            60.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Dividend aristocrat and Warren Buffett holding",
+            "Coca-Cola (KO) is known for consistent dividends and global brand"
+        ),
+        GameQuestion(
+            "stock_23",
+            "What is Johnson & Johnson's stock price (USD)?",
+            160.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Healthcare and pharmaceutical giant",
+            "J&J (JNJ) is a dividend aristocrat with diversified healthcare portfolio"
+        ),
+        GameQuestion(
+            "stock_24",
+            "What is Walmart's approximate stock price (USD)?",
+            165.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "World's largest retailer",
+            "Walmart (WMT) dominates discount retail and growing e-commerce"
+        ),
+        GameQuestion(
+            "stock_25",
+            "What is Boeing's approximate stock price (USD)?",
+            210.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.HARD,
+            "Aerospace and defense contractor",
+            "Boeing (BA) has faced challenges with 737 MAX and supply chain issues"
+        ),
+
+        // CRYPTOCURRENCY & ALTERNATIVES - MEDIUM/HARD
+        GameQuestion(
+            "stock_26",
+            "What is Bitcoin's approximate price (thousand USD)?",
+            67.0,
+            "thousand USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Leading cryptocurrency by market cap",
+            "Bitcoin price is highly volatile and influenced by institutional adoption"
+        ),
+        GameQuestion(
+            "stock_27",
+            "What is Ethereum's approximate price (thousand USD)?",
+            3.5,
+            "thousand USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.HARD,
+            "Second-largest cryptocurrency platform",
+            "Ethereum enables smart contracts and decentralized applications"
+        ),
+        GameQuestion(
+            "stock_28",
+            "What is gold's price per ounce (USD)?",
+            2050.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "Traditional safe-haven asset",
+            "Gold prices rise during economic uncertainty and inflation"
+        ),
+        GameQuestion(
+            "stock_29",
+            "What is crude oil's price per barrel (USD)?",
+            78.0,
+            "USD",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.MEDIUM,
+            "WTI crude oil benchmark price",
+            "Oil prices affected by OPEC decisions and global demand"
+        ),
+        GameQuestion(
+            "stock_30",
+            "What is the 10-year Treasury yield (%)?",
+            4.3,
+            "%",
+            GameCategory.STOCK_MARKET,
+            QuestionDifficulty.HARD,
+            "Benchmark interest rate for US government debt",
+            "10-year yield influences mortgage rates and stock valuations"
+        )
+    )
 
     fun getRandomQuestion(category: GameCategory, difficulty: QuestionDifficulty? = null): GameQuestion {
         val questions = getQuestionsForCategory(category)

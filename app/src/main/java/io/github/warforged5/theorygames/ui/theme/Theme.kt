@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import io.github.warforged5.theorygames.dataclass.AppTheme
+import androidx.core.view.WindowCompat
 
 // Classic Purple Theme (Original)
 private val ClassicLightColorScheme = lightColorScheme(
@@ -138,11 +138,11 @@ private val SunsetDarkColorScheme = darkColorScheme(
     onTertiary = Color(0xFF663300)
 )
 
-// Midnight Theme
+// Midnight Theme (Always Dark)
 private val MidnightColorScheme = darkColorScheme(
-    primary = Color(0xFF9C27B0),
-    secondary = Color(0xFF673AB7),
-    tertiary = Color(0xFF3F51B5),
+    primary = Color(0xFFCE93D8),
+    secondary = Color(0xFFB39DDB),
+    tertiary = Color(0xFF9FA8DA),
     primaryContainer = Color(0xFF4A148C),
     secondaryContainer = Color(0xFF311B92),
     tertiaryContainer = Color(0xFF1A237E),
@@ -150,9 +150,9 @@ private val MidnightColorScheme = darkColorScheme(
     surface = Color(0xFF121218),
     surfaceContainer = Color(0xFF1A1A20),
     surfaceContainerHigh = Color(0xFF222228),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
+    onPrimary = Color(0xFF2E0066),
+    onSecondary = Color(0xFF1A0D66),
+    onTertiary = Color(0xFF0D1966),
     onBackground = Color(0xFFE4E1E6),
     onSurface = Color(0xFFE4E1E6),
     outline = Color(0xFF938F96),
@@ -168,41 +168,53 @@ fun TheoryGamesTheme(
     val systemDarkTheme = isSystemInDarkTheme()
     val context = LocalContext.current
 
-    // Safe dark theme determination
+    // Determine dark theme preference
     val isDarkTheme = when {
-        isDarkMode != null -> isDarkMode
-        selectedTheme == "MIDNIGHT" -> true
-        else -> systemDarkTheme
+        selectedTheme == "MIDNIGHT" -> true // Midnight is always dark
+        isDarkMode != null -> isDarkMode // User preference
+        else -> systemDarkTheme // Follow system
     }
 
-    // Safe color scheme selection with fallbacks
-    val colorScheme = try {
-        when (selectedTheme) {
-            "DYNAMIC" -> {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (isDarkTheme) dynamicDarkColorScheme(context)
-                    else dynamicLightColorScheme(context)
-                } else {
-                    if (isDarkTheme) createSafeDarkScheme() else createSafeLightScheme()
-                }
-            }
-            "OCEAN" -> {
-                if (isDarkTheme) createOceanDarkScheme() else createOceanLightScheme()
-            }
-            "FOREST" -> {
-                if (isDarkTheme) createForestDarkScheme() else createForestLightScheme()
-            }
-            "SUNSET" -> {
-                if (isDarkTheme) createSunsetDarkScheme() else createSunsetLightScheme()
-            }
-            "MIDNIGHT" -> createMidnightScheme()
-            else -> {
-                if (isDarkTheme) createSafeDarkScheme() else createSafeLightScheme()
+    // Select color scheme based on theme and dark mode
+    val colorScheme = when (selectedTheme) {
+        "DYNAMIC" -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (isDarkTheme) dynamicDarkColorScheme(context)
+                else dynamicLightColorScheme(context)
+            } else {
+                // Fallback to classic theme on older Android versions
+                if (isDarkTheme) ClassicDarkColorScheme else ClassicLightColorScheme
             }
         }
-    } catch (e: Exception) {
-        // Fallback to safe default schemes
-        if (isDarkTheme) createSafeDarkScheme() else createSafeLightScheme()
+        "OCEAN" -> {
+            if (isDarkTheme) OceanDarkColorScheme else OceanLightColorScheme
+        }
+        "FOREST" -> {
+            if (isDarkTheme) ForestDarkColorScheme else ForestLightColorScheme
+        }
+        "SUNSET" -> {
+            if (isDarkTheme) SunsetDarkColorScheme else SunsetLightColorScheme
+        }
+        "MIDNIGHT" -> {
+            MidnightColorScheme // Always dark
+        }
+        "CLASSIC" -> {
+            if (isDarkTheme) ClassicDarkColorScheme else ClassicLightColorScheme
+        }
+        else -> {
+            // Default to SYSTEM behavior (Classic theme following system)
+            if (isDarkTheme) ClassicDarkColorScheme else ClassicLightColorScheme
+        }
+    }
+
+    // Update system bars
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as Activity).window
+            window.statusBarColor = colorScheme.primary.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isDarkTheme
+        }
     }
 
     MaterialTheme(
@@ -211,58 +223,3 @@ fun TheoryGamesTheme(
         content = content
     )
 }
-
-// Safe color schemes that won't crash
-private fun createSafeLightScheme() = lightColorScheme(
-    primary = Color(0xFF6650a4),
-    secondary = Color(0xFF625b71),
-    tertiary = Color(0xFF7D5260)
-)
-
-private fun createSafeDarkScheme() = darkColorScheme(
-    primary = Color(0xFFD0BCFF),
-    secondary = Color(0xFFCCC2DC),
-    tertiary = Color(0xFFEFB8C8)
-)
-
-private fun createOceanLightScheme() = lightColorScheme(
-    primary = Color(0xFF1976D2),
-    secondary = Color(0xFF0288D1),
-    tertiary = Color(0xFF00ACC1)
-)
-
-private fun createOceanDarkScheme() = darkColorScheme(
-    primary = Color(0xFF90CAF9),
-    secondary = Color(0xFF81D4FA),
-    tertiary = Color(0xFF80DEEA)
-)
-
-private fun createForestLightScheme() = lightColorScheme(
-    primary = Color(0xFF2E7D32),
-    secondary = Color(0xFF388E3C),
-    tertiary = Color(0xFF4CAF50)
-)
-
-private fun createForestDarkScheme() = darkColorScheme(
-    primary = Color(0xFF81C784),
-    secondary = Color(0xFF4CAF50),
-    tertiary = Color(0xFF8BC34A)
-)
-
-private fun createSunsetLightScheme() = lightColorScheme(
-    primary = Color(0xFFE65100),
-    secondary = Color(0xFFFF5722),
-    tertiary = Color(0xFFFF9800)
-)
-
-private fun createSunsetDarkScheme() = darkColorScheme(
-    primary = Color(0xFFFFAB40),
-    secondary = Color(0xFFFF7043),
-    tertiary = Color(0xFFFFB74D)
-)
-
-private fun createMidnightScheme() = darkColorScheme(
-    primary = Color(0xFF9C27B0),
-    secondary = Color(0xFF673AB7),
-    tertiary = Color(0xFF3F51B5)
-)

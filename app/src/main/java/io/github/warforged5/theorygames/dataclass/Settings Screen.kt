@@ -1,7 +1,11 @@
 // SettingsScreen.kt
 package io.github.warforged5.theorygames.dataclass
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -34,6 +38,14 @@ fun SettingsScreen(
     val settings by settingsManager.settingsFlow.collectAsState(initial = AppSettings())
 
     var showThemeDialog by remember { mutableStateOf(false) }
+    var showSuccessMessage by remember { mutableStateOf(false) }
+
+    // Show success message when theme changes
+    LaunchedEffect(currentTheme) {
+        showSuccessMessage = true
+        kotlinx.coroutines.delay(2000)
+        showSuccessMessage = false
+    }
 
     Scaffold(
         topBar = {
@@ -47,214 +59,264 @@ fun SettingsScreen(
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item {
-                Text(
-                    "Appearance",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item {
+                    Text(
+                        "Appearance",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
-            item {
-                // Theme Selection Card
-                ElevatedCard {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
+                item {
+                    // Enhanced Theme Selection Card
+                    ElevatedCard(
+                        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
                     ) {
-                        Text(
-                            "Color Theme",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Surface(
-                            onClick = { showThemeDialog = true },
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainer
+                        Column(
+                            modifier = Modifier.padding(20.dp)
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.Palette,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    "Color Theme",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Surface(
+                                onClick = { showThemeDialog = true },
+                                shape = RoundedCornerShape(16.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(20.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
+                                        Text(
+                                            currentTheme.displayName,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                        Text(
+                                            currentTheme.description,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                                        )
+                                    }
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        // Theme preview
+                                        ThemePreviewDots(theme = currentTheme)
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Icon(
+                                            Icons.Default.ChevronRight,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    // Enhanced Dark Mode Card
+                    ElevatedCard(
+                        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    if (currentDarkMode == true) Icons.Default.DarkMode
+                                    else if (currentDarkMode == false) Icons.Default.LightMode
+                                    else Icons.Default.Brightness4,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    "Dark Mode",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Column(
+                                modifier = Modifier.selectableGroup(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                DarkModeOption(
+                                    label = "Follow System",
+                                    description = "Use system setting",
+                                    icon = Icons.Default.Brightness4,
+                                    isSelected = currentDarkMode == null,
+                                    onClick = { onDarkModeChanged(null) }
+                                )
+
+                                DarkModeOption(
+                                    label = "Light Mode",
+                                    description = "Always use light theme",
+                                    icon = Icons.Default.LightMode,
+                                    isSelected = currentDarkMode == false,
+                                    onClick = { onDarkModeChanged(false) }
+                                )
+
+                                DarkModeOption(
+                                    label = "Dark Mode",
+                                    description = "Always use dark theme",
+                                    icon = Icons.Default.DarkMode,
+                                    isSelected = currentDarkMode == true,
+                                    onClick = { onDarkModeChanged(true) }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item {
+                    Text(
+                        "Game Preferences",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                item {
+                    // Game Settings Card
+                    ElevatedCard {
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            // Timer Settings
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
                                     Text(
-                                        currentTheme.displayName,
+                                        "Timer by Default",
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold
                                     )
                                     Text(
-                                        currentTheme.description,
+                                        if (settings.defaultTimer) "Questions have time limits"
+                                        else "Play at your own pace",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
-                                Icon(
-                                    Icons.Default.ChevronRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                Switch(
+                                    checked = settings.defaultTimer,
+                                    onCheckedChange = { newValue ->
+                                        scope.launch {
+                                            settingsManager.updateSettings(
+                                                settings.copy(defaultTimer = newValue)
+                                            )
+                                        }
+                                    }
                                 )
                             }
-                        }
-                    }
-                }
-            }
 
-            item {
-                // Dark Mode Card
-                ElevatedCard {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            "Dark Mode",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                            HorizontalDivider()
 
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Column(
-                            modifier = Modifier.selectableGroup()
-                        ) {
-                            DarkModeOption(
-                                label = "Follow System",
-                                description = "Use system setting",
-                                isSelected = currentDarkMode == null,
-                                onClick = { onDarkModeChanged(null) }
-                            )
-
-                            DarkModeOption(
-                                label = "Light Mode",
-                                description = "Always use light theme",
-                                isSelected = currentDarkMode == false,
-                                onClick = { onDarkModeChanged(false) }
-                            )
-
-                            DarkModeOption(
-                                label = "Dark Mode",
-                                description = "Always use dark theme",
-                                isSelected = currentDarkMode == true,
-                                onClick = { onDarkModeChanged(true) }
-                            )
-                        }
-                    }
-                }
-            }
-
-            item {
-                Text(
-                    "Game Preferences",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            item {
-                // Game Settings Card
-                ElevatedCard {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        // Default Game Mode
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(
-                                modifier = Modifier.weight(1f)
+                            // Animations
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    "Default Game Mode",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    settings.defaultGameMode.displayName,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-
-                        HorizontalDivider()
-
-                        // Timer Settings
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    "Timer by Default",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    if (settings.defaultTimer) "Questions have time limits"
-                                    else "Play at your own pace",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            Switch(
-                                checked = settings.defaultTimer,
-                                onCheckedChange = { newValue ->
-                                    scope.launch {
-                                        settingsManager.updateSettings(
-                                            settings.copy(defaultTimer = newValue)
-                                        )
-                                    }
+                                Column {
+                                    Text(
+                                        "Animations",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        if (settings.enableAnimations) "Enhanced visual effects"
+                                        else "Reduced motion",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
                                 }
-                            )
-                        }
-
-                        HorizontalDivider()
-
-                        // Animations
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    "Animations",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    if (settings.enableAnimations) "Enhanced visual effects"
-                                    else "Reduced motion",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                Switch(
+                                    checked = settings.enableAnimations,
+                                    onCheckedChange = { newValue ->
+                                        scope.launch {
+                                            settingsManager.updateSettings(
+                                                settings.copy(enableAnimations = newValue)
+                                            )
+                                        }
+                                    }
                                 )
                             }
-                            Switch(
-                                checked = settings.enableAnimations,
-                                onCheckedChange = { newValue ->
-                                    scope.launch {
-                                        settingsManager.updateSettings(
-                                            settings.copy(enableAnimations = newValue)
-                                        )
-                                    }
-                                }
-                            )
                         }
+                    }
+                }
+            }
+
+            // Success message
+            AnimatedVisibility(
+                visible = showSuccessMessage,
+                enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+                exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 16.dp)
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            "Theme applied successfully!",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
                     }
                 }
             }
@@ -275,38 +337,64 @@ fun SettingsScreen(
 }
 
 @Composable
+fun ThemePreviewDots(theme: AppTheme) {
+    val colors = getThemePreviewColors(theme)
+
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        colors.forEach { color ->
+            Surface(
+                modifier = Modifier.size(12.dp),
+                shape = androidx.compose.foundation.shape.CircleShape,
+                color = color
+            ) {}
+        }
+    }
+}
+
+@Composable
 fun DarkModeOption(
     label: String,
     description: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-        else MaterialTheme.colorScheme.surface
+        else MaterialTheme.colorScheme.surfaceContainer
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
-                    label,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Text(
-                    description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column {
+                    Text(
+                        label,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             RadioButton(
@@ -390,22 +478,43 @@ fun ThemeOption(
                     tint = MaterialTheme.colorScheme.primary
                 )
             } else {
-                Surface(
-                    modifier = Modifier.size(24.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = getThemePreviewColor(theme)
-                ) {}
+                ThemePreviewDots(theme = theme)
             }
         }
     }
 }
 
-@Composable
-private fun getThemePreviewColor(theme: AppTheme) = when (theme) {
-    AppTheme.CLASSIC, AppTheme.SYSTEM -> androidx.compose.ui.graphics.Color(0xFF6650a4)
-    AppTheme.OCEAN -> androidx.compose.ui.graphics.Color(0xFF1976D2)
-    AppTheme.FOREST -> androidx.compose.ui.graphics.Color(0xFF2E7D32)
-    AppTheme.SUNSET -> androidx.compose.ui.graphics.Color(0xFFE65100)
-    AppTheme.MIDNIGHT -> androidx.compose.ui.graphics.Color(0xFF9C27B0)
-    AppTheme.DYNAMIC -> MaterialTheme.colorScheme.primary
+private fun getThemePreviewColors(theme: AppTheme): List<androidx.compose.ui.graphics.Color> {
+    return when (theme) {
+        AppTheme.CLASSIC, AppTheme.SYSTEM -> listOf(
+            androidx.compose.ui.graphics.Color(0xFF6650a4),
+            androidx.compose.ui.graphics.Color(0xFF625b71),
+            androidx.compose.ui.graphics.Color(0xFF7D5260)
+        )
+        AppTheme.OCEAN -> listOf(
+            androidx.compose.ui.graphics.Color(0xFF1976D2),
+            androidx.compose.ui.graphics.Color(0xFF0288D1),
+            androidx.compose.ui.graphics.Color(0xFF00ACC1)
+        )
+        AppTheme.FOREST -> listOf(
+            androidx.compose.ui.graphics.Color(0xFF2E7D32),
+            androidx.compose.ui.graphics.Color(0xFF388E3C),
+            androidx.compose.ui.graphics.Color(0xFF4CAF50)
+        )
+        AppTheme.SUNSET -> listOf(
+            androidx.compose.ui.graphics.Color(0xFFE65100),
+            androidx.compose.ui.graphics.Color(0xFFFF5722),
+            androidx.compose.ui.graphics.Color(0xFFFF9800)
+        )
+        AppTheme.MIDNIGHT -> listOf(
+            androidx.compose.ui.graphics.Color(0xFF9C27B0),
+            androidx.compose.ui.graphics.Color(0xFF673AB7),
+            androidx.compose.ui.graphics.Color(0xFF3F51B5)
+        )
+        AppTheme.DYNAMIC -> listOf(
+            androidx.compose.ui.graphics.Color(0xFF6750A4),
+            androidx.compose.ui.graphics.Color(0xFF958DA5),
+            androidx.compose.ui.graphics.Color(0xFF735573)
+        )
+    }
 }
