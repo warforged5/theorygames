@@ -29,10 +29,7 @@ fun TheoryGamesApp() {
         gameViewModel.setProfileManager(profileManager)
     }
 
-    TheoryGamesTheme(
-        appTheme = settings.selectedTheme,
-        darkTheme = settings.isDarkMode
-    ) {
+    TheoryGamesTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background

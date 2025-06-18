@@ -44,7 +44,7 @@ data class ProfileCollection(
     val lastSelectedProfiles: List<String> = emptyList() // IDs of last selected profiles
 )
 
-// Theme.kt - Enhanced theme support
+@Serializable
 enum class AppTheme(
     val displayName: String,
     val description: String

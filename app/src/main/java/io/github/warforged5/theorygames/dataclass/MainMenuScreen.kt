@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.border
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -99,6 +100,14 @@ fun MainMenuScreen(
     onNavigateToProfiles: () -> Unit,
     onNavigateToSettings: () -> Unit
 ) {
+    val context = LocalContext.current
+    val profileManager = remember { ProfileManager(context) }
+    val settingsManager = remember { SettingsManager(context) }
+
+    val profileCollection by profileManager.profilesFlow.collectAsState(initial = ProfileCollection())
+    val settings by settingsManager.settingsFlow.collectAsState(initial = AppSettings())
+
+    // Animation states
     val infiniteTransition = rememberInfiniteTransition(label = "background")
     val animatedAlpha by infiniteTransition.animateFloat(
         initialValue = 0.3f,
@@ -109,28 +118,52 @@ fun MainMenuScreen(
         ), label = "alpha"
     )
 
+    val cardAnimation by infiniteTransition.animateFloat(
+        initialValue = 0.95f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000),
+            repeatMode = RepeatMode.Reverse
+        ), label = "cardScale"
+    )
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
-                        "TheoryGames",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Psychology,
+                            contentDescription = null,
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            "TheoryGames",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 },
                 actions = {
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(
+                            Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
                 )
             )
         }
     ) { paddingValues ->
-        Box(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
@@ -139,156 +172,225 @@ fun MainMenuScreen(
                             MaterialTheme.colorScheme.primaryContainer.copy(alpha = animatedAlpha),
                             MaterialTheme.colorScheme.background
                         ),
-                        radius = 1000f
+                        radius = 1200f
                     )
                 )
+                .padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Spacer(modifier = Modifier.weight(0.5f))
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
-                // Hero section (same as before)
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(8.dp, RoundedCornerShape(24.dp)),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-                    ),
-                    shape = RoundedCornerShape(24.dp)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(32.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Filled.Psychology,
-                            contentDescription = null,
-                            modifier = Modifier.size(72.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+            // Hero Section
+            item {
+                AnimatedHeroCard(
+                    cardAnimation = cardAnimation,
+                    onStartGame = onNavigateToSetup
+                )
+            }
 
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = "Welcome to TheoryGames",
-                            style = MaterialTheme.typography.headlineSmall,
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = "Compete with friends in nerdy trivia challenges",
-                            style = MaterialTheme.typography.bodyLarge,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+            // Quick Stats Section
+            if (profileCollection.profiles.isNotEmpty()) {
+                item {
+                    QuickStatsSection(profiles = profileCollection.profiles)
                 }
+            }
 
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Enhanced feature highlights
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    FeatureCard(
-                        icon = Icons.Outlined.EmojiEvents,
-                        title = "Compete",
-                        description = "Multiple game modes"
-                    )
-                    FeatureCard(
-                        icon = Icons.Outlined.Person,
-                        title = "Profiles",
-                        description = "Save your progress"
-                    )
-                    FeatureCard(
-                        icon = Icons.Outlined.Palette,
-                        title = "Themes",
-                        description = "Customize appearance"
+            // Recent Profiles Section
+            if (profileCollection.profiles.isNotEmpty()) {
+                item {
+                    RecentProfilesSection(
+                        profiles = profileCollection.profiles.take(5),
+                        onViewAllProfiles = onNavigateToProfiles
                     )
                 }
+            }
 
-                Spacer(modifier = Modifier.weight(1f))
+            // Game Modes Preview
+            item {
+                GameModesPreviewSection()
+            }
 
-                // Enhanced action buttons
-                ExtendedFloatingActionButton(
-                    onClick = onNavigateToSetup,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    containerColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Icon(Icons.Default.PlayArrow, contentDescription = null)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        "Start New Game",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+            // Categories Preview
+            item {
+                CategoriesPreviewSection()
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
+            // Navigation Cards
+            item {
+                NavigationCardsSection(
+                    onNavigateToProfiles = onNavigateToProfiles,
+                    onNavigateToRules = onNavigateToRules,
+                    onNavigateToSettings = onNavigateToSettings,
+                    profileCount = profileCollection.profiles.size,
+                    currentTheme = settings.selectedTheme
+                )
+            }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onNavigateToProfiles,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Outlined.Person, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Profiles")
-                    }
-
-                    OutlinedButton(
-                        onClick = onNavigateToRules,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Icon(Icons.Outlined.Help, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Rules")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
+            // Footer
+            item {
+                FooterSection()
             }
         }
     }
 }
+
+@Composable
+private fun AnimatedHeroCard(
+    cardAnimation: Float,
+    onStartGame: () -> Unit
+) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(16.dp, RoundedCornerShape(24.dp)),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 12.dp),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        ),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Animated icon
+            Box(
+                modifier = Modifier
+                    .size(96.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                        CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Psychology,
+                    contentDescription = null,
+                    modifier = Modifier.size(56.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "Welcome to TheoryGames",
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Challenge your friends in nerdy trivia competitions!",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            ExtendedFloatingActionButton(
+                onClick = onStartGame,
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = MaterialTheme.colorScheme.primary,
+                elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 8.dp)
+            ) {
+                Icon(Icons.Default.PlayArrow, contentDescription = null)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    "Start New Game",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun QuickStatsSection(profiles: List<SavedProfile>) {
+    val totalGames = profiles.sumOf { it.totalGamesPlayed }
+    val totalWins = profiles.sumOf { it.totalWins }
+    val bestStreak = profiles.maxOfOrNull { it.longestStreak } ?: 0
+    val totalAchievements = profiles.sumOf { it.achievements.size }
+
+    ElevatedCard {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Your Gaming Stats",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Icon(
+                    Icons.Default.BarChart,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                StatItem("Games", totalGames.toString(), Icons.Default.Games)
+                StatItem("Wins", totalWins.toString(), Icons.Default.EmojiEvents)
+                StatItem("Best Streak", bestStreak.toString(), Icons.Default.Whatshot)
+                StatItem("Achievements", totalAchievements.toString(), Icons.Default.Star)
+            }
+        }
+    }
+}
+
 @Composable
 private fun StatItem(
-    value: String,
     label: String,
+    value: String,
     icon: ImageVector
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
-        )
-        Spacer(modifier = Modifier.height(4.dp))
+        Surface(
+            modifier = Modifier.size(40.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primaryContainer
+        ) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             value,
-            style = MaterialTheme.typography.titleLarge,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
+
         Text(
             label,
             style = MaterialTheme.typography.bodySmall,
@@ -298,87 +400,304 @@ private fun StatItem(
 }
 
 @Composable
-private fun CategoryPreviewCard(category: GameCategory) {
-    Card(
-        modifier = Modifier
-            .width(140.dp)
-            .height(120.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+private fun RecentProfilesSection(
+    profiles: List<SavedProfile>,
+    onViewAllProfiles: () -> Unit
+) {
+    ElevatedCard {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Recent Players",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                TextButton(onClick = onViewAllProfiles) {
+                    Text("View All")
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        Icons.Default.ArrowForward,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(profiles) { profile ->
+                    ProfilePreviewCard(profile = profile)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfilePreviewCard(profile: SavedProfile) {
+    Surface(
+        modifier = Modifier.width(120.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                category.icon,
-                style = MaterialTheme.typography.displaySmall
-            )
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        profile.avatar.emoji,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                category.displayName,
+                profile.name,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                maxLines = 1,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                "${profile.totalWins}W/${profile.totalGamesPlayed}G",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
 }
 
 @Composable
-private fun FeatureCard(
-    icon: ImageVector,
-    title: String,
-    description: String
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f)
-        )
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+private fun GameModesPreviewSection() {
+    ElevatedCard {
+        Column(
+            modifier = Modifier.padding(20.dp)
         ) {
-            Surface(
-                modifier = Modifier.size(48.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer
-            ) {
-                Box(contentAlignment = Alignment.Center) {
+            Text(
+                "Game Modes",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            val gameModes = listOf(
+                Triple("Classic", "Standard 10-round game", Icons.Default.Timer),
+                Triple("Speed", "Quick 5-round challenge", Icons.Default.Bolt),
+                Triple("Elimination", "Last place eliminated", Icons.Default.DeleteSweep),
+                Triple("Power-Up", "Strategic abilities", Icons.Default.AutoAwesome)
+            )
+
+            gameModes.forEach { (name, description, icon) ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(
                         icon,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column {
+                        Text(
+                            name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
+        }
+    }
+}
 
-            Spacer(modifier = Modifier.width(16.dp))
+@Composable
+private fun CategoriesPreviewSection() {
+    ElevatedCard {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                "Challenge Categories",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
 
-            Column(
-                modifier = Modifier.weight(1f)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                items(GameCategory.values().toList()) { category ->
+                    CategoryPreviewChip(category = category)
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun CategoryPreviewChip(category: GameCategory) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                category.icon,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Text(
+                category.displayName,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+    }
+}
+
+@Composable
+private fun NavigationCardsSection(
+    onNavigateToProfiles: () -> Unit,
+    onNavigateToRules: () -> Unit,
+    onNavigateToSettings: () -> Unit,
+    profileCount: Int,
+    currentTheme: AppTheme
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        NavigationCard(
+            title = "Profiles",
+            description = "$profileCount saved",
+            icon = Icons.Default.Person,
+            onClick = onNavigateToProfiles,
+            modifier = Modifier.weight(1f)
+        )
+
+        NavigationCard(
+            title = "Rules",
+            description = "How to play",
+            icon = Icons.Default.Help,
+            onClick = onNavigateToRules,
+            modifier = Modifier.weight(1f)
+        )
+
+        NavigationCard(
+            title = "Themes",
+            description = currentTheme.displayName,
+            icon = Icons.Default.Palette,
+            onClick = onNavigateToSettings,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun NavigationCard(
+    title: String,
+    description: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(
+        onClick = onClick,
+        modifier = modifier,
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun FooterSection() {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Made with ❤️ for nerds everywhere",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            "Version 1.0.0",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.outline
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 

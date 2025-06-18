@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import io.github.warforged5.theorygames.dataclass.AppTheme
 
 // Classic Purple Theme (Original)
@@ -162,50 +161,48 @@ private val MidnightColorScheme = darkColorScheme(
 
 @Composable
 fun TheoryGamesTheme(
-    appTheme: AppTheme = AppTheme.SYSTEM,
-    darkTheme: Boolean? = null,
+    selectedTheme: String = "SYSTEM",
+    isDarkMode: Boolean? = null,
     content: @Composable () -> Unit
 ) {
     val systemDarkTheme = isSystemInDarkTheme()
     val context = LocalContext.current
 
+    // Safe dark theme determination
     val isDarkTheme = when {
-        darkTheme != null -> darkTheme
-        appTheme == AppTheme.MIDNIGHT -> true
+        isDarkMode != null -> isDarkMode
+        selectedTheme == "MIDNIGHT" -> true
         else -> systemDarkTheme
     }
 
-    val colorScheme = when (appTheme) {
-        AppTheme.DYNAMIC -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (isDarkTheme) dynamicDarkColorScheme(context)
-                else dynamicLightColorScheme(context)
-            } else {
-                if (isDarkTheme) ClassicDarkColorScheme else ClassicLightColorScheme
+    // Safe color scheme selection with fallbacks
+    val colorScheme = try {
+        when (selectedTheme) {
+            "DYNAMIC" -> {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (isDarkTheme) dynamicDarkColorScheme(context)
+                    else dynamicLightColorScheme(context)
+                } else {
+                    if (isDarkTheme) createSafeDarkScheme() else createSafeLightScheme()
+                }
+            }
+            "OCEAN" -> {
+                if (isDarkTheme) createOceanDarkScheme() else createOceanLightScheme()
+            }
+            "FOREST" -> {
+                if (isDarkTheme) createForestDarkScheme() else createForestLightScheme()
+            }
+            "SUNSET" -> {
+                if (isDarkTheme) createSunsetDarkScheme() else createSunsetLightScheme()
+            }
+            "MIDNIGHT" -> createMidnightScheme()
+            else -> {
+                if (isDarkTheme) createSafeDarkScheme() else createSafeLightScheme()
             }
         }
-        AppTheme.CLASSIC, AppTheme.SYSTEM -> {
-            if (isDarkTheme) ClassicDarkColorScheme else ClassicLightColorScheme
-        }
-        AppTheme.OCEAN -> {
-            if (isDarkTheme) OceanDarkColorScheme else OceanLightColorScheme
-        }
-        AppTheme.FOREST -> {
-            if (isDarkTheme) ForestDarkColorScheme else ForestLightColorScheme
-        }
-        AppTheme.SUNSET -> {
-            if (isDarkTheme) SunsetDarkColorScheme else SunsetLightColorScheme
-        }
-        AppTheme.MIDNIGHT -> MidnightColorScheme
-    }
-
-    val view = LocalView.current
-    if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !isDarkTheme
-        }
+    } catch (e: Exception) {
+        // Fallback to safe default schemes
+        if (isDarkTheme) createSafeDarkScheme() else createSafeLightScheme()
     }
 
     MaterialTheme(
@@ -214,3 +211,58 @@ fun TheoryGamesTheme(
         content = content
     )
 }
+
+// Safe color schemes that won't crash
+private fun createSafeLightScheme() = lightColorScheme(
+    primary = Color(0xFF6650a4),
+    secondary = Color(0xFF625b71),
+    tertiary = Color(0xFF7D5260)
+)
+
+private fun createSafeDarkScheme() = darkColorScheme(
+    primary = Color(0xFFD0BCFF),
+    secondary = Color(0xFFCCC2DC),
+    tertiary = Color(0xFFEFB8C8)
+)
+
+private fun createOceanLightScheme() = lightColorScheme(
+    primary = Color(0xFF1976D2),
+    secondary = Color(0xFF0288D1),
+    tertiary = Color(0xFF00ACC1)
+)
+
+private fun createOceanDarkScheme() = darkColorScheme(
+    primary = Color(0xFF90CAF9),
+    secondary = Color(0xFF81D4FA),
+    tertiary = Color(0xFF80DEEA)
+)
+
+private fun createForestLightScheme() = lightColorScheme(
+    primary = Color(0xFF2E7D32),
+    secondary = Color(0xFF388E3C),
+    tertiary = Color(0xFF4CAF50)
+)
+
+private fun createForestDarkScheme() = darkColorScheme(
+    primary = Color(0xFF81C784),
+    secondary = Color(0xFF4CAF50),
+    tertiary = Color(0xFF8BC34A)
+)
+
+private fun createSunsetLightScheme() = lightColorScheme(
+    primary = Color(0xFFE65100),
+    secondary = Color(0xFFFF5722),
+    tertiary = Color(0xFFFF9800)
+)
+
+private fun createSunsetDarkScheme() = darkColorScheme(
+    primary = Color(0xFFFFAB40),
+    secondary = Color(0xFFFF7043),
+    tertiary = Color(0xFFFFB74D)
+)
+
+private fun createMidnightScheme() = darkColorScheme(
+    primary = Color(0xFF9C27B0),
+    secondary = Color(0xFF673AB7),
+    tertiary = Color(0xFF3F51B5)
+)
