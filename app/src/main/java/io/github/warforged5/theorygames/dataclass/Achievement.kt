@@ -1,10 +1,14 @@
 package io.github.warforged5.theorygames.dataclass
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Achievement(
     val type: AchievementType,
     val unlockedAt: Long = System.currentTimeMillis()
 )
 
+@Serializable
 enum class AchievementType(
     val displayName: String,
     val description: String,

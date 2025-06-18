@@ -12,7 +12,6 @@ import kotlin.math.abs
 import kotlin.math.round
 
 class GameViewModel : ViewModel() {
-
     private var _gameState = mutableStateOf(GameState())
     val gameState: State<GameState> = _gameState
 
@@ -35,12 +34,21 @@ class GameViewModel : ViewModel() {
     private var _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
-    // Single timer job for current player's turn
+    private var profileManager: ProfileManager? = null
     private var timerJob: Job? = null
 
-    fun addPlayer(playerName: String, avatar: PlayerAvatar = GameData.getRandomAvatar()) {
+    fun setProfileManager(manager: ProfileManager) {
+        profileManager = manager
+    }
+
+    fun addPlayer(
+        playerName: String,
+        avatar: PlayerAvatar = GameData.getRandomAvatar(),
+        profileId: String? = null
+    ) {
+        val playerId = profileId ?: "player_${System.currentTimeMillis()}"
         val newPlayer = Player(
-            id = "player_${System.currentTimeMillis()}",
+            id = playerId,
             name = playerName.trim(),
             avatar = avatar,
             powerUps = if (_selectedGameMode.value == GameMode.POWERUP) {
@@ -107,14 +115,13 @@ class GameViewModel : ViewModel() {
         )
 
         viewModelScope.launch {
-            delay(500) // Loading animation
+            delay(500)
             _isLoading.value = false
             nextQuestion()
         }
     }
 
     fun nextQuestion() {
-        // Cancel any existing timer
         timerJob?.cancel()
 
         val difficulty = when (_gameState.value.currentRound) {
@@ -132,7 +139,7 @@ class GameViewModel : ViewModel() {
         _gameState.value = _gameState.value.copy(
             currentQuestion = question,
             playerAnswers = emptyList(),
-            currentPlayerTurnIndex = 0, // Start with first player
+            currentPlayerTurnIndex = 0,
             timeRemaining = timePerQuestion,
             frozenPlayers = emptySet(),
             isPaused = false,
@@ -147,7 +154,6 @@ class GameViewModel : ViewModel() {
     private fun startCurrentPlayerTurn() {
         if (!_gameState.value.timerEnabled) return
 
-        // Cancel existing timer
         timerJob?.cancel()
 
         val timePerTurn = when (_selectedGameMode.value) {
@@ -162,7 +168,6 @@ class GameViewModel : ViewModel() {
 
         timerJob = viewModelScope.launch {
             for (i in timePerTurn downTo 0) {
-                // Check if game is still active and not paused
                 if (!_gameState.value.isGameActive || _gameState.value.isPaused || !_gameState.value.timerEnabled) {
                     break
                 }
@@ -171,7 +176,6 @@ class GameViewModel : ViewModel() {
                 delay(1000)
 
                 if (i == 0) {
-                    // Current player's time is up, move to next player
                     moveToNextPlayer()
                     break
                 }
@@ -196,14 +200,12 @@ class GameViewModel : ViewModel() {
     }
 
     fun submitTextAnswer(playerId: String, textAnswer: String, powerUpUsed: PowerUpType? = null) {
-        // Only allow current player to submit
         val currentPlayerIndex = _gameState.value.currentPlayerTurnIndex
         val currentPlayer = _gameState.value.players.getOrNull(currentPlayerIndex)
 
         if (currentPlayer?.id != playerId) return
         if (_gameState.value.frozenPlayers.contains(playerId)) return
 
-        // Check if player has already answered this round
         val existingAnswer = _gameState.value.playerAnswers.find { it.playerId == playerId }
         if (existingAnswer != null) return
 
@@ -218,30 +220,25 @@ class GameViewModel : ViewModel() {
 
         _gameState.value = _gameState.value.copy(playerAnswers = updatedAnswers)
 
-        // Handle power-up usage
         powerUpUsed?.let { powerUp ->
             usePowerUp(playerId, powerUp)
         }
 
-        // Check for speed achievements
         if (timeTaken < 5.0) {
             unlockAchievement(playerId, AchievementType.SPEED_DEMON)
         }
 
-        // Stop current timer and move to next player
         timerJob?.cancel()
         moveToNextPlayer()
     }
 
     private fun submitNumericAnswer(playerId: String, answer: Double, powerUpUsed: PowerUpType? = null) {
-        // Only allow current player to submit
         val currentPlayerIndex = _gameState.value.currentPlayerTurnIndex
         val currentPlayer = _gameState.value.players.getOrNull(currentPlayerIndex)
 
         if (currentPlayer?.id != playerId) return
         if (_gameState.value.frozenPlayers.contains(playerId)) return
 
-        // Check if player has already answered this round
         val existingAnswer = _gameState.value.playerAnswers.find { it.playerId == playerId }
         if (existingAnswer != null) return
 
@@ -256,17 +253,14 @@ class GameViewModel : ViewModel() {
 
         _gameState.value = _gameState.value.copy(playerAnswers = updatedAnswers)
 
-        // Handle power-up usage
         powerUpUsed?.let { powerUp ->
             usePowerUp(playerId, powerUp)
         }
 
-        // Check for speed achievements
         if (timeTaken < 5.0) {
             unlockAchievement(playerId, AchievementType.SPEED_DEMON)
         }
 
-        // Stop current timer and move to next player
         timerJob?.cancel()
         moveToNextPlayer()
     }
@@ -275,19 +269,16 @@ class GameViewModel : ViewModel() {
         val nextPlayerIndex = _gameState.value.currentPlayerTurnIndex + 1
 
         if (nextPlayerIndex < _gameState.value.players.size) {
-            // Move to next player
             _gameState.value = _gameState.value.copy(
                 currentPlayerTurnIndex = nextPlayerIndex,
                 isWaitingForNextPlayer = true
             )
 
-            // Brief pause before starting next player's turn
             viewModelScope.launch {
                 delay(1500)
                 startCurrentPlayerTurn()
             }
         } else {
-            // All players have had their turn, process results
             processRoundResults()
         }
     }
@@ -310,7 +301,6 @@ class GameViewModel : ViewModel() {
         val player = _gameState.value.players.find { it.id == playerId } ?: return
         val powerUp = player.powerUps.find { it.type == powerUpType && it.usesRemaining > 0 } ?: return
 
-        // Update player's power-ups
         val updatedPowerUps = player.powerUps.map {
             if (it.type == powerUpType) it.copy(usesRemaining = it.usesRemaining - 1)
             else it
@@ -321,7 +311,6 @@ class GameViewModel : ViewModel() {
             if (it.id == playerId) updatedPlayer else it
         }
 
-        // Apply power-up effects
         when (powerUpType) {
             PowerUpType.EXTRA_TIME -> {
                 val newTime = (_gameState.value.timeRemaining + 15).coerceAtMost(60)
@@ -331,7 +320,6 @@ class GameViewModel : ViewModel() {
                 )
             }
             PowerUpType.FREEZE -> {
-                // In turn-based mode, freeze doesn't make as much sense, but we can skip other players' turns
                 val otherPlayerIds = _gameState.value.players
                     .filter { it.id != playerId }
                     .map { it.id }
@@ -353,23 +341,18 @@ class GameViewModel : ViewModel() {
     }
 
     private fun processRoundResults() {
-        // Cancel timer to ensure no multiple timers
         timerJob?.cancel()
 
         val question = _gameState.value.currentQuestion ?: return
         val answers = _gameState.value.playerAnswers
 
-        // Calculate accuracy and find winner
         val winner = findWinner(answers, question.correctAnswer)
         val pointsAwarded = calculatePoints(answers, question, winner)
 
-        // Update scores and streaks
         val updatedPlayers = updatePlayersAfterRound(pointsAwarded, winner?.id)
 
-        // Check for achievements
         checkAchievements(answers, question, winner)
 
-        // Save result
         val result = GameResult(
             question = question,
             playerAnswers = answers,
@@ -384,12 +367,10 @@ class GameViewModel : ViewModel() {
             lastRoundWinner = winner?.id
         )
 
-        // Show answer visualization
         _showAnswerVisualization.value = true
 
-        // Check if game is over or handle elimination
         viewModelScope.launch {
-            delay(4000) // Show results for 4 seconds
+            delay(4000)
             _showAnswerVisualization.value = false
 
             if (_gameState.value.gameMode == GameMode.ELIMINATION && _gameState.value.currentRound > 2) {
@@ -409,10 +390,8 @@ class GameViewModel : ViewModel() {
     }
 
     private fun endGame() {
-        // Cancel any running timer
         timerJob?.cancel()
 
-        // Check for perfect game achievement
         val topPlayer = _gameState.value.players.maxByOrNull { it.score }
         topPlayer?.let { player ->
             if (player.score == _gameResults.size) {
@@ -420,12 +399,15 @@ class GameViewModel : ViewModel() {
             }
         }
 
+        viewModelScope.launch {
+            profileManager?.updateProfileStats(_gameState.value.players)
+        }
+
         _gameState.value = _gameState.value.copy(
             isGameActive = false,
             currentQuestion = null
         )
     }
-
 
     private fun calculatePoints(answers: List<PlayerAnswer>, question: GameQuestion, winner: Player?): Map<String, Int> {
         val pointsMap = mutableMapOf<String, Int>()
@@ -435,16 +417,13 @@ class GameViewModel : ViewModel() {
             if (player != null) {
                 var points = 0
 
-                // Winner gets base points
                 if (answer.playerId == winner?.id) {
                     points = question.difficulty.pointMultiplier
 
-                    // Apply power-up effects
                     if (answer.powerUpUsed == PowerUpType.DOUBLE_POINTS) {
                         points *= 2
                     }
 
-                    // Add streak bonus
                     points += GameData.calculateStreakBonus(player.currentStreak + 1)
                 }
 
@@ -452,7 +431,6 @@ class GameViewModel : ViewModel() {
             }
         }
 
-        // Handle steal point power-up
         answers.forEach { answer ->
             if (answer.powerUpUsed == PowerUpType.STEAL_POINT && answer.playerId != winner?.id) {
                 winner?.let { winnerPlayer ->
@@ -477,7 +455,6 @@ class GameViewModel : ViewModel() {
             val newLongestStreak = maxOf(player.longestStreak, newStreak)
             val newTotalWins = if (player.id == winnerId) player.totalWins + 1 else player.totalWins
 
-            // Award new power-ups occasionally
             val newPowerUps = if (_gameState.value.powerUpsEnabled && player.id == winnerId &&
                 _gameState.value.currentRound % 3 == 0) {
                 player.powerUps + PowerUp(GameData.getAvailablePowerUps().random())
@@ -505,17 +482,14 @@ class GameViewModel : ViewModel() {
 
     private fun checkAchievements(answers: List<PlayerAnswer>, question: GameQuestion, winner: Player?) {
         winner?.let { winnerPlayer ->
-            // First win
             if (winnerPlayer.totalWins == 0) {
                 unlockAchievement(winnerPlayer.id, AchievementType.FIRST_WIN)
             }
 
-            // Hat trick (3 in a row)
             if (winnerPlayer.currentStreak + 1 >= 3) {
                 unlockAchievement(winnerPlayer.id, AchievementType.HAT_TRICK)
             }
 
-            // Close call (within 1%)
             val winnerAnswer = answers.find { it.playerId == winnerPlayer.id }
             winnerAnswer?.let { answer ->
                 val errorPercent = abs(answer.answer - question.correctAnswer) / question.correctAnswer * 100
@@ -525,7 +499,6 @@ class GameViewModel : ViewModel() {
             }
         }
 
-        // Check power user achievement
         _gameState.value.players.forEach { player ->
             val powerUpsUsedThisGame = _gameResults.sumOf { result ->
                 result.playerAnswers.count { it.playerId == player.id && it.powerUpUsed != null }
@@ -559,12 +532,10 @@ class GameViewModel : ViewModel() {
 
         val currentQuestion = _gameState.value.currentQuestion
 
-        // Handle GPU questions differently
         if (currentQuestion?.category == GameCategory.GPU) {
             return findGPUWinner(answers, currentQuestion)
         }
 
-        // Handle regular numeric questions
         val closestAnswer = answers.minByOrNull { abs(it.answer - correctAnswer) }
         return _gameState.value.players.find { it.id == closestAnswer?.playerId }
     }
@@ -575,7 +546,6 @@ class GameViewModel : ViewModel() {
         val chartData = GameData.getGPUChartData(question.id) ?: return null
         val actualGpu = chartData.mysteryGpu
 
-        // Process all GPU guesses and find the best one
         val gpuGuesses = answers.map { answer ->
             val guessedGpuName = answer.textAnswer
             val isExact = GameData.isExactGPUMatch(guessedGpuName, actualGpu)
@@ -587,21 +557,18 @@ class GameViewModel : ViewModel() {
                 if (guessedGpu != null) {
                     GameData.calculateGPUPerformanceDistance(guessedGpu, actualGpu, chartData.games)
                 } else {
-                    Double.MAX_VALUE // Invalid GPU name gets maximum distance
+                    Double.MAX_VALUE
                 }
             }
 
             answer.playerId to performanceDistance
         }
 
-        // Find the player with the smallest performance distance (closest match)
         val winnerPlayerId = gpuGuesses.minByOrNull { it.second }?.first
         return _gameState.value.players.find { it.id == winnerPlayerId }
     }
 
-
     fun resetGame() {
-        // Cancel any running timer
         timerJob?.cancel()
 
         _gameState.value = GameState(
@@ -660,7 +627,6 @@ class GameViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        // Cancel timer when ViewModel is cleared
         timerJob?.cancel()
     }
 }

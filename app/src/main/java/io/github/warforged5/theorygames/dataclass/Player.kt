@@ -1,5 +1,7 @@
 package io.github.warforged5.theorygames.dataclass
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Player(
     val id: String,
     val name: String,

@@ -1,7 +1,17 @@
 package io.github.warforged5.theorygames.dataclass
+import kotlinx.serialization.Serializable
 
-enum class QuestionDifficulty(val displayName: String, val pointMultiplier: Int, val color: androidx.compose.ui.graphics.Color) {
-    EASY("Easy", 1, androidx.compose.ui.graphics.Color(0xFF4CAF50)),
-    MEDIUM("Medium", 2, androidx.compose.ui.graphics.Color(0xFFFF9800)),
-    HARD("Hard", 3, androidx.compose.ui.graphics.Color(0xFFF44336))
+@Serializable
+enum class QuestionDifficulty(
+    val displayName: String,
+    val pointMultiplier: Int,
+    val colorHex: String  // Changed from Color to String for serialization
+) {
+    EASY("Easy", 1, "#4CAF50"),
+    MEDIUM("Medium", 2, "#FF9800"),
+    HARD("Hard", 3, "#F44336");
+
+    // Helper property to get the actual Color object
+    val color: androidx.compose.ui.graphics.Color
+        get() = androidx.compose.ui.graphics.Color(android.graphics.Color.parseColor(colorHex))
 }

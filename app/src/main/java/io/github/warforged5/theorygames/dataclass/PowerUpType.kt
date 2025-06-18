@@ -1,5 +1,7 @@
 package io.github.warforged5.theorygames.dataclass
+import kotlinx.serialization.Serializable
 
+@Serializable
 enum class PowerUpType(
     val displayName: String,
     val description: String,

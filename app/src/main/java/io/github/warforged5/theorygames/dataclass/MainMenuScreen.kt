@@ -39,6 +39,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.border
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +95,9 @@ fun CategoryCard(
 @Composable
 fun MainMenuScreen(
     onNavigateToSetup: () -> Unit,
-    onNavigateToRules: () -> Unit
+    onNavigateToRules: () -> Unit,
+    onNavigateToProfiles: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "background")
     val animatedAlpha by infiniteTransition.animateFloat(
@@ -114,6 +118,11 @@ fun MainMenuScreen(
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
@@ -144,7 +153,7 @@ fun MainMenuScreen(
             ) {
                 Spacer(modifier = Modifier.weight(0.5f))
 
-                // Hero section
+                // Hero section (same as before)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -187,7 +196,7 @@ fun MainMenuScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Feature highlights
+                // Enhanced feature highlights
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
@@ -198,20 +207,20 @@ fun MainMenuScreen(
                         description = "Multiple game modes"
                     )
                     FeatureCard(
-                        icon = Icons.Outlined.Star,
-                        title = "Power-ups",
-                        description = "Strategic abilities"
+                        icon = Icons.Outlined.Person,
+                        title = "Profiles",
+                        description = "Save your progress"
                     )
                     FeatureCard(
-                        icon = Icons.Outlined.School,
-                        title = "Learn",
-                        description = "Educational content"
+                        icon = Icons.Outlined.Palette,
+                        title = "Themes",
+                        description = "Customize appearance"
                     )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Action buttons
+                // Enhanced action buttons
                 ExtendedFloatingActionButton(
                     onClick = onNavigateToSetup,
                     modifier = Modifier
@@ -230,15 +239,27 @@ fun MainMenuScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                OutlinedButton(
-                    onClick = onNavigateToRules,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Icon(Icons.Outlined.Help, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("How to Play")
+                    OutlinedButton(
+                        onClick = onNavigateToProfiles,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Outlined.Person, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Profiles")
+                    }
+
+                    OutlinedButton(
+                        onClick = onNavigateToRules,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(Icons.Outlined.Help, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Rules")
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -246,44 +267,63 @@ fun MainMenuScreen(
         }
     }
 }
+@Composable
+private fun StatItem(
+    value: String,
+    label: String,
+    icon: ImageVector
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            value,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
 
 @Composable
-fun FeatureCard(
-    icon: ImageVector,
-    title: String,
-    description: String
-) {
+private fun CategoryPreviewCard(category: GameCategory) {
     Card(
         modifier = Modifier
-            .width(100.dp)
+            .width(140.dp)
             .height(120.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
-        )
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Icon(
-                icon,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.primary
+            Text(
+                category.icon,
+                style = MaterialTheme.typography.displaySmall
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                title,
+                category.displayName,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                description,
-                style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -291,371 +331,59 @@ fun FeatureCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GameSetupScreen(
-    gameViewModel: GameViewModel,
-    onNavigateToGame: () -> Unit,
-    onNavigateBack: () -> Unit
+private fun FeatureCard(
+    icon: ImageVector,
+    title: String,
+    description: String
 ) {
-    val gameState by gameViewModel.gameState
-    val currentCategory by gameViewModel.currentCategory
-    val selectedGameMode by gameViewModel.selectedGameMode
-    val isLoading by gameViewModel.isLoading
-
-    var newPlayerName by remember { mutableStateOf("") }
-    var selectedAvatar by remember { mutableStateOf(PlayerAvatar.SCIENTIST) }
-    var showAvatarPicker by remember { mutableStateOf(false) }
-
-    val focusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Game Setup") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = gameState.players.size >= 2,
-                enter = scaleIn() + fadeIn(),
-                exit = scaleOut() + fadeOut()
-            ) {
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        gameViewModel.startGame()
-                        onNavigateToGame()
-                    },
-                    containerColor = MaterialTheme.colorScheme.primary
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Icon(Icons.Default.PlayArrow, contentDescription = null)
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Start Game")
-                }
-            }
-        }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
-            item {
-                // Game Mode Selection
-                ElevatedCard {
-                    Column(
-                        modifier = Modifier.padding(20.dp)
-                    ) {
-                        Text(
-                            "Game Mode",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        GameData.getAllGameModes().forEach { gameMode ->
-                            GameModeCard(
-                                gameMode = gameMode,
-                                isSelected = selectedGameMode == gameMode,
-                                onClick = { gameViewModel.selectGameMode(gameMode) }
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-                }
-            }
-
-            item {
-                // Category Selection
-                ElevatedCard {
-                    Column(
-                        modifier = Modifier.padding(20.dp)
-                    ) {
-                        Text(
-                            "Category",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Grid of category cards
-                        val categories = GameData.getAllCategories()
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            categories.chunked(2).forEach { rowCategories ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    rowCategories.forEach { category ->
-                                        CategoryCard(
-                                            category = category,
-                                            isSelected = currentCategory == category,
-                                            onClick = { gameViewModel.selectCategory(category) },
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                    }
-                                    // Fill remaining space if odd number
-                                    if (rowCategories.size == 1) {
-                                        Spacer(modifier = Modifier.weight(1f))
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                // Game Settings
-                ElevatedCard {
-                    Column(
-                        modifier = Modifier.padding(20.dp)
-                    ) {
-                        Text(
-                            "Game Settings",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Timer toggle
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surfaceContainer
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        "Timer",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        if (gameState.timerEnabled) "Questions have time limits"
-                                        else "Play at your own pace",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                Switch(
-                                    checked = gameState.timerEnabled,
-                                    onCheckedChange = { gameViewModel.toggleTimer(it) }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                // Player Management
-                ElevatedCard {
-                    Column(
-                        modifier = Modifier.padding(20.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "Players",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Badge {
-                                Text("${gameState.players.size}")
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Add player input
-                        OutlinedCard(
-                            colors = CardDefaults.outlinedCardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                // Avatar picker
-                                Surface(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clickable { showAvatarPicker = true },
-                                    shape = CircleShape,
-                                    color = MaterialTheme.colorScheme.primaryContainer
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            selectedAvatar.emoji,
-                                            style = MaterialTheme.typography.headlineSmall
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.width(12.dp))
-
-                                OutlinedTextField(
-                                    value = newPlayerName,
-                                    onValueChange = { newPlayerName = it },
-                                    label = { Text("Player Name") },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .focusRequester(focusRequester),
-                                    singleLine = true,
-                                    keyboardOptions = KeyboardOptions(
-                                        imeAction = ImeAction.Done
-                                    ),
-                                    keyboardActions = KeyboardActions(
-                                        onDone = {
-                                            if (newPlayerName.isNotBlank()) {
-                                                gameViewModel.addPlayer(newPlayerName.trim(), selectedAvatar)
-                                                newPlayerName = ""
-                                                selectedAvatar = GameData.getRandomAvatar()
-                                            }
-                                            focusManager.clearFocus()
-                                        }
-                                    )
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                FilledIconButton(
-                                    onClick = {
-                                        if (newPlayerName.isNotBlank()) {
-                                            gameViewModel.addPlayer(newPlayerName.trim(), selectedAvatar)
-                                            newPlayerName = ""
-                                            selectedAvatar = GameData.getRandomAvatar()
-                                        }
-                                    },
-                                    enabled = newPlayerName.isNotBlank()
-                                ) {
-                                    Icon(Icons.Default.PersonAdd, contentDescription = "Add Player")
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Player list with animations
-                        gameState.players.forEach { player ->
-                            AnimatedVisibility(
-                                visible = true,
-                                enter = slideInVertically() + fadeIn(),
-                                exit = slideOutVertically() + fadeOut()
-                            ) {
-                                EnhancedPlayerCard(
-                                    player = player,
-                                    onRemove = { gameViewModel.removePlayer(player.id) },
-                                    showPowerUps = selectedGameMode == GameMode.POWERUP
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-
-                        if (gameState.players.size < 2) {
-                            Card(
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer
-                                )
-                            ) {
-                                Text(
-                                    "Add at least 2 players to start",
-                                    modifier = Modifier.padding(16.dp),
-                                    color = MaterialTheme.colorScheme.onErrorContainer,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    textAlign = TextAlign.Center
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Add space for FAB
-            item {
-                Spacer(modifier = Modifier.height(80.dp))
-            }
-        }
-    }
-
-    // Avatar picker dialog
-    if (showAvatarPicker) {
-        AlertDialog(
-            onDismissRequest = { showAvatarPicker = false },
-            title = { Text("Choose Avatar") },
-            text = {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(PlayerAvatar.values().toList()) { avatar ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    selectedAvatar = avatar
-                                    showAvatarPicker = false
-                                },
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (selectedAvatar == avatar)
-                                    MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.surface
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(16.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(avatar.emoji, style = MaterialTheme.typography.headlineMedium)
-                                Spacer(modifier = Modifier.width(16.dp))
-                                Text(
-                                    avatar.name,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showAvatarPicker = false }) {
-                    Text("Done")
-                }
-            }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.7f)
         )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                modifier = Modifier.size(48.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
+
+
+
 
 @Composable
 fun GameModeCard(
@@ -912,6 +640,231 @@ fun GameplayScreen(
 }
 
 @Composable
+fun WelcomeBanner(
+    currentProfile: UserProfile?,
+    onCreateProfile: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+    ) {
+        if (currentProfile != null) {
+            // Returning user welcome
+            Row(
+                modifier = Modifier.padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    modifier = Modifier.size(64.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            currentProfile.preferredAvatar.emoji,
+                            fontSize = 28.sp
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        "Welcome back, ${currentProfile.name}!",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        "${currentProfile.getLevelTitle()} • Level ${currentProfile.getLevel()}",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (currentProfile.totalGamesPlayed > 0) {
+                        Text(
+                            "${currentProfile.totalWins}/${currentProfile.totalGamesPlayed} games won (${currentProfile.getWinRate().toInt()}%)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+        } else {
+            // New user welcome
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    TheoryGamesIcons.Waving,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    "Welcome to TheoryGames!",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+
+                Text(
+                    "Create a profile to track your progress and compete with friends!",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = onCreateProfile,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(Icons.Default.PersonAdd, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Create Profile")
+                }
+            }
+        }
+    }
+}
+@Composable
+fun AppIconDisplay(
+    modifier: Modifier = Modifier,
+    size: androidx.compose.ui.unit.Dp = 120.dp
+) {
+    Card(
+        modifier = modifier.size(size),
+        shape = CircleShape,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Icon(
+                Icons.Default.Psychology,
+                contentDescription = "TheoryGames Logo",
+                modifier = Modifier.size(size * 0.5f),
+                tint = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+    }
+}
+
+@Composable
+fun RecentActivityCard(
+    gameHistory: List<GameHistoryEntry>,
+    onViewMore: () -> Unit
+) {
+    if (gameHistory.isEmpty()) return
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Recent Activity",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                TextButton(onClick = onViewMore) {
+                    Text("View All")
+                    Icon(
+                        Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            gameHistory.take(3).forEach { entry ->
+                RecentActivityItem(entry = entry)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecentActivityItem(entry: GameHistoryEntry) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                entry.category.icon,
+                fontSize = 20.sp
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    entry.category.displayName,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "${entry.gameMode.displayName} • ${entry.playerCount} players",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = when (entry.finalPosition) {
+                    1 -> MaterialTheme.colorScheme.primaryContainer
+                    2 -> MaterialTheme.colorScheme.secondaryContainer
+                    3 -> MaterialTheme.colorScheme.tertiaryContainer
+                    else -> MaterialTheme.colorScheme.surfaceVariant
+                }
+            ) {
+                Text(
+                    "#${entry.finalPosition}",
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
 fun QuestionCard(
     question: GameQuestion,
     gameViewModel: GameViewModel? = null
@@ -1025,8 +978,6 @@ fun QuestionCard(
         }
     }
 }
-
-// [Rest of the existing components remain the same: TimerCard, EnhancedPlayerAnswerCard, PowerUpSelector, AnswerVisualizationCard, AchievementNotification, ResultsScreen, WinnerCard, FinalStandingsCard, PlayerResultCard, AchievementsCard, RulesScreen]
 
 @Composable
 fun TimerCard(
@@ -2090,6 +2041,7 @@ fun AchievementNotification(
 @Composable
 fun ResultsScreen(
     gameViewModel: GameViewModel,
+    profileManager: ProfileManager,
     onNavigateToMenu: () -> Unit,
     onPlayAgain: () -> Unit
 ) {
@@ -2140,7 +2092,6 @@ fun ResultsScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {
-                // Winner celebration
                 if (topPlayers.isNotEmpty()) {
                     WinnerCard(
                         winner = topPlayers.first(),
@@ -2150,7 +2101,6 @@ fun ResultsScreen(
             }
 
             item {
-                // Final standings
                 FinalStandingsCard(
                     players = topPlayers,
                     gameViewModel = gameViewModel
@@ -2158,11 +2108,134 @@ fun ResultsScreen(
             }
 
             item {
-                // Achievements section
                 val allAchievements = topPlayers.flatMap { it.achievements }
                 if (allAchievements.isNotEmpty()) {
                     AchievementsCard(achievements = allAchievements)
                 }
+            }
+        }
+    }
+}
+
+// Helper function to update profile with game results
+private fun updateProfileWithGameResults(
+    profile: UserProfile,
+    player: Player,
+    finalPosition: Int,
+    category: GameCategory,
+    gameMode: GameMode,
+    totalRounds: Int,
+    accuracy: Double
+): UserProfile {
+    val won = finalPosition == 1
+    val newTotalGames = profile.totalGamesPlayed + 1
+    val newTotalWins = if (won) profile.totalWins + 1 else profile.totalWins
+    val newBestStreak = maxOf(profile.bestStreak, player.longestStreak)
+
+    // Update category stats
+    val currentCategoryStats = profile.categoryStats[category] ?: CategoryStats()
+    val newCategoryStats = currentCategoryStats.copy(
+        gamesPlayed = currentCategoryStats.gamesPlayed + 1,
+        wins = if (won) currentCategoryStats.wins + 1 else currentCategoryStats.wins,
+        bestStreak = maxOf(currentCategoryStats.bestStreak, player.longestStreak),
+        averageAccuracy = if (currentCategoryStats.gamesPlayed > 0) {
+            ((currentCategoryStats.averageAccuracy * currentCategoryStats.gamesPlayed) + accuracy) / (currentCategoryStats.gamesPlayed + 1)
+        } else accuracy,
+        lastPlayed = System.currentTimeMillis()
+    )
+
+    val updatedCategoryStats = profile.categoryStats.toMutableMap()
+    updatedCategoryStats[category] = newCategoryStats
+
+    return profile.copy(
+        totalGamesPlayed = newTotalGames,
+        totalWins = newTotalWins,
+        bestStreak = newBestStreak,
+        categoryStats = updatedCategoryStats,
+        lastPlayedAt = System.currentTimeMillis(),
+        achievements = profile.achievements + player.achievements, // Merge new achievements
+        preferredGameMode = gameMode // Update preference based on recent play
+    )
+}
+
+// New component for showing profile progress
+@Composable
+private fun ProfileProgressCard(
+    profile: UserProfile,
+    player: Player,
+    finalPosition: Int
+) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                "Your Progress",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column {
+                    Text(
+                        "Final Position",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        "#$finalPosition",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+
+                Column {
+                    Text(
+                        "Rounds Won",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        "${player.score}",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+
+                Column {
+                    Text(
+                        "New Level",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                    )
+                    Text(
+                        "${profile.getLevel()}",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            if (player.achievements.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    "🎉 Unlocked ${player.achievements.size} new achievement${if (player.achievements.size > 1) "s" else ""}!",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                )
             }
         }
     }
@@ -2528,4 +2601,17 @@ fun RulesScreen(
             }
         }
     }
+}
+
+object TheoryGamesIcons {
+    val Psychology = Icons.Default.Psychology
+    val Waving = Icons.Default.WavingHand
+    val TrendingUp = Icons.Default.TrendingUp
+    val BarChart = Icons.Default.BarChart
+    val DonutLarge = Icons.Default.DonutLarge
+    val Category = Icons.Default.Category
+    val Vibration = Icons.Default.Vibration
+    val ChevronRight = Icons.Default.ChevronRight
+    val SportsEsports = Icons.Default.SportsEsports
+    val WavingHand = Icons.Default.WavingHand
 }

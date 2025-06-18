@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import io.github.warforged5.theorygames.ui.theme.TheorygamesTheme
+import io.github.warforged5.theorygames.ui.theme.TheoryGamesTheme
 import io.github.warforged5.theorygames.dataclass.TheoryGamesApp
 
 class MainActivity : ComponentActivity() {
@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            TheorygamesTheme {
+            TheoryGamesTheme {
                 TheoryGamesApp()
             }
         }

@@ -1,5 +1,7 @@
 package io.github.warforged5.theorygames.dataclass
+import kotlinx.serialization.Serializable
 
+@Serializable
 enum class GameMode(val displayName: String, val description: String) {
     CLASSIC("Classic", "Standard 10-round game with 30s per question"),
     SPEED("Speed Round", "Quick 5-round game with 15s per question"),
