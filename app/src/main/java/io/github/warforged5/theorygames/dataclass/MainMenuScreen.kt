@@ -44,46 +44,91 @@ fun CategoryCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val isNewCategory = category == GameCategory.SCIENTIFIC_CONSTANTS || category == GameCategory.STOCK_MARKET
+    val categoryTheme = when (category) {
+        GameCategory.STOCK_MARKET -> "stock"
+        GameCategory.SCIENTIFIC_CONSTANTS -> "science"
+        GameCategory.MOVIE_ENTERTAINMENT -> "movie"
+        else -> "default"
+    }
+
     Card(
         modifier = modifier
             .aspectRatio(1.2f)
             .clickable { onClick() },
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
-            else MaterialTheme.colorScheme.surfaceContainer
+            containerColor = when {
+                isSelected -> MaterialTheme.colorScheme.primaryContainer
+                isNewCategory && categoryTheme == "stock" -> androidx.compose.ui.graphics.Color(0xFF1B5E20).copy(alpha = 0.1f)
+                isNewCategory && categoryTheme == "science" -> MaterialTheme.colorScheme.secondaryContainer
+                isNewCategory && categoryTheme == "movie" -> androidx.compose.ui.graphics.Color(0xFF1B5E20).copy(alpha = 0.1f)
+                else -> MaterialTheme.colorScheme.surfaceContainer
+            }
         ),
         border = if (isSelected) {
-            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else if (isNewCategory) {
+            androidx.compose.foundation.BorderStroke(
+                1.dp,
+                if (categoryTheme == "stock") androidx.compose.ui.graphics.Color(0xFF1B5E20)
+                else MaterialTheme.colorScheme.secondary
+            )
         } else null,
         elevation = CardDefaults.cardElevation(
-            defaultElevation = if (isSelected) 8.dp else 4.dp
+            defaultElevation = if (isSelected) 8.dp else if (isNewCategory) 6.dp else 4.dp
         )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                category.icon,
-                style = MaterialTheme.typography.displaySmall
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                category.displayName,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                color = if (isSelected)
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                else MaterialTheme.colorScheme.onSurfaceVariant
-            )
+        Box(modifier = Modifier.fillMaxSize()) {
+            // "New" badge for new categories
+            if (isNewCategory) {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = if (categoryTheme == "stock") androidx.compose.ui.graphics.Color(0xFF1B5E20)
+                    else MaterialTheme.colorScheme.secondary
+                ) {
+                    Text(
+                        "NEW",
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = androidx.compose.ui.graphics.Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    category.icon,
+                    style = MaterialTheme.typography.displaySmall
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    category.displayName,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = when {
+                        isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
+                        isNewCategory && categoryTheme == "stock" -> androidx.compose.ui.graphics.Color(0xFF1B5E20)
+                        isNewCategory && categoryTheme == "science" -> MaterialTheme.colorScheme.onSecondaryContainer
+                        isNewCategory && categoryTheme == "movie" -> androidx.compose.ui.graphics.Color(0xFF1B5E20)
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            }
         }
     }
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -935,109 +980,192 @@ fun QuestionCard(
     question: GameQuestion,
     gameViewModel: GameViewModel? = null
 ) {
-    ElevatedCard(
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+    when (question.category) {
+        GameCategory.STOCK_MARKET -> {
+            StockMarketQuestionCard(question = question)
+        }
+        GameCategory.SCIENTIFIC_CONSTANTS -> {
+            ScientificQuestionCard(question = question)
+        }
+        GameCategory.MOVIE_ENTERTAINMENT -> {
+            MovieQuestionCard(question = question)
+        }
+        GameCategory.GPU -> {
+            // Existing GPU logic
+            ElevatedCard(
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier.padding(24.dp)
                 ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.secondaryContainer
-                    ) {
-                        Text(
-                            question.category.icon,
-                            modifier = Modifier.padding(8.dp),
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        question.category.displayName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                // Show country flag and name if available
-                if (question.countryFlag.isNotEmpty()) {
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            question.countryFlag,
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                        if (question.countryName.isNotEmpty()) {
-                            Spacer(modifier = Modifier.width(8.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.tertiaryContainer
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.secondaryContainer
                             ) {
                                 Text(
-                                    question.countryName,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                    question.category.icon,
+                                    modifier = Modifier.padding(8.dp),
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                question.category.displayName,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        question.question,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = MaterialTheme.typography.headlineSmall.lineHeight
+                    )
+
+                    GameData.getGPUChartData(question.id)?.let { chartData ->
+                        Spacer(modifier = Modifier.height(16.dp))
+                        GPUPerformanceChart(
+                            chartData = chartData,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
+                    if (question.hint.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainer
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.Lightbulb,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Hint: ${question.hint}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                question.question,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                lineHeight = MaterialTheme.typography.headlineSmall.lineHeight
-            )
-
-            // Show GPU performance charts if this is a GPU question
-            if (question.category == GameCategory.GPU) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                GameData.getGPUChartData(question.id)?.let { chartData ->
-                    GPUPerformanceChart(
-                        chartData = chartData,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-
-            if (question.hint.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainer
+        }
+        else -> {
+            // Standard question card for other categories
+            ElevatedCard(
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            Icons.Default.Lightbulb,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "Hint: ${question.hint}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.secondaryContainer
+                            ) {
+                                Text(
+                                    question.category.icon,
+                                    modifier = Modifier.padding(8.dp),
+                                    style = MaterialTheme.typography.titleLarge
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                question.category.displayName,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        // Show country flag and name if available
+                        if (question.countryFlag.isNotEmpty()) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    question.countryFlag,
+                                    style = MaterialTheme.typography.headlineMedium
+                                )
+                                if (question.countryName.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.tertiaryContainer
+                                    ) {
+                                        Text(
+                                            question.countryName,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            color = MaterialTheme.colorScheme.onTertiaryContainer
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        question.question,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = MaterialTheme.typography.headlineSmall.lineHeight
+                    )
+
+                    if (question.hint.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainer
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.Lightbulb,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    "Hint: ${question.hint}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -1054,21 +1182,29 @@ fun TimerCard(
     isTimerEnabled: Boolean,
     currentPlayer: Player?,
     isWaitingForNextPlayer: Boolean,
-    onResume: () -> Unit
+    onResume: () -> Unit,
+    currentCategory: GameCategory? = null
 ) {
     val progress = if (isTimerEnabled) timeRemaining.toFloat() / totalTime.toFloat() else 1f
     val isLowTime = timeRemaining <= 5 && isTimerEnabled
 
+    // Theme colors based on category
+    val containerColor = when {
+        !isTimerEnabled -> MaterialTheme.colorScheme.surfaceContainer
+        isPaused -> MaterialTheme.colorScheme.surfaceContainer
+        isWaitingForNextPlayer -> MaterialTheme.colorScheme.tertiaryContainer
+        currentCategory == GameCategory.STOCK_MARKET && isLowTime -> androidx.compose.ui.graphics.Color(0xFFD32F2F).copy(alpha = 0.2f)
+        currentCategory == GameCategory.STOCK_MARKET -> androidx.compose.ui.graphics.Color(0xFF1B5E20).copy(alpha = 0.2f)
+        currentCategory == GameCategory.SCIENTIFIC_CONSTANTS && isLowTime -> MaterialTheme.colorScheme.errorContainer
+        currentCategory == GameCategory.SCIENTIFIC_CONSTANTS -> MaterialTheme.colorScheme.secondaryContainer
+        isLowTime -> MaterialTheme.colorScheme.errorContainer
+        timeRemaining <= 10 -> MaterialTheme.colorScheme.tertiaryContainer
+        else -> MaterialTheme.colorScheme.primaryContainer
+    }
+
     ElevatedCard(
         colors = CardDefaults.elevatedCardColors(
-            containerColor = when {
-                !isTimerEnabled -> MaterialTheme.colorScheme.surfaceContainer
-                isPaused -> MaterialTheme.colorScheme.surfaceContainer
-                isWaitingForNextPlayer -> MaterialTheme.colorScheme.tertiaryContainer
-                isLowTime -> MaterialTheme.colorScheme.errorContainer
-                timeRemaining <= 10 -> MaterialTheme.colorScheme.tertiaryContainer
-                else -> MaterialTheme.colorScheme.primaryContainer
-            }
+            containerColor = containerColor
         )
     ) {
         Column(
@@ -1119,7 +1255,11 @@ fun TimerCard(
                         Surface(
                             modifier = Modifier.size(40.dp),
                             shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary
+                            color = when (currentCategory) {
+                                GameCategory.STOCK_MARKET -> androidx.compose.ui.graphics.Color(0xFF1B5E20)
+                                GameCategory.SCIENTIFIC_CONSTANTS -> MaterialTheme.colorScheme.secondary
+                                else -> MaterialTheme.colorScheme.primary
+                            }
                         ) {
                             Box(
                                 contentAlignment = Alignment.Center
@@ -1158,6 +1298,8 @@ fun TimerCard(
                         .height(8.dp)
                         .clip(RoundedCornerShape(4.dp)),
                     color = when {
+                        currentCategory == GameCategory.STOCK_MARKET && isLowTime -> androidx.compose.ui.graphics.Color(0xFFD32F2F)
+                        currentCategory == GameCategory.STOCK_MARKET -> androidx.compose.ui.graphics.Color(0xFF1B5E20)
                         isLowTime -> MaterialTheme.colorScheme.error
                         timeRemaining <= 10 -> MaterialTheme.colorScheme.tertiary
                         else -> MaterialTheme.colorScheme.primary
@@ -1680,30 +1822,137 @@ fun AnswerVisualizationCard(
     gameViewModel: GameViewModel
 ) {
     val currentQuestion = gameViewModel.gameState.value.currentQuestion
-    val isGPUQuestion = currentQuestion?.category == GameCategory.GPU
 
-    ElevatedCard(
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
-        ) {
-            Text(
-                "Round Results",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+    when (currentQuestion?.category) {
+        GameCategory.STOCK_MARKET -> {
+            StockMarketAnswerVisualization(
+                visualizations = visualizations,
+                question = currentQuestion
             )
-            Spacer(modifier = Modifier.height(16.dp))
+        }
+        GameCategory.SCIENTIFIC_CONSTANTS -> {
+            ScientificAnswerVisualization(
+                visualizations = visualizations,
+                question = currentQuestion
+            )
+        }
+        GameCategory.MOVIE_ENTERTAINMENT -> {
+            MovieAnswerVisualization(
+                visualizations = visualizations,
+                question = currentQuestion
+            )
+        }
+        GameCategory.GPU -> {
+            // Existing GPU visualization logic
+            ElevatedCard(
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    Text(
+                        "Round Results",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    GPUAnswerResults(
+                        gameViewModel = gameViewModel,
+                        currentQuestion = currentQuestion
+                    )
+                }
+            }
+        }
+        else -> {
+            // Standard answer visualization
+            ElevatedCard(
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(20.dp)
+                ) {
+                    Text(
+                        "Round Results",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            if (isGPUQuestion) {
-                // Enhanced GPU visualization
-                GPUAnswerResults(
-                    gameViewModel = gameViewModel,
-                    currentQuestion = currentQuestion
-                )
-            } else {
-                // Regular numeric visualization
-                RegularAnswerResults(visualizations = visualizations)
+                    visualizations.forEachIndexed { index, vis ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                if (vis.isWinner) {
+                                    Icon(
+                                        Icons.Default.EmojiEvents,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                } else {
+                                    Text(
+                                        "${index + 1}",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        vis.playerName,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = if (vis.isWinner) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                    Text(
+                                        "Answer: ${vis.answer}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = if (vis.isWinner)
+                                    MaterialTheme.colorScheme.primaryContainer
+                                else MaterialTheme.colorScheme.surfaceContainer
+                            ) {
+                                Text(
+                                    "${vis.percentageError}% error",
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = if (vis.isWinner)
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider()
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Text(
+                            "Correct Answer: ${visualizations.firstOrNull()?.correctAnswer ?: "N/A"} ${currentQuestion?.unit ?: ""}",
+                            modifier = Modifier.padding(12.dp),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
             }
         }
     }
